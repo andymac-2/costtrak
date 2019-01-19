@@ -5,7 +5,6 @@
 
 var Product = function (graph, index, obj) {
     // graph properties (state)
-    this.weight = 0;
     this.outgoing = [];
     this.incoming = [];
     this.priority = 0;
@@ -13,8 +12,10 @@ var Product = function (graph, index, obj) {
     this.visited;
 
     // user properties (state)
+    this.comment = "";
     this.name = "";
     this.level = 0;
+    this.weight = 0;
     
     // drawing properties
     this.start = {x: 0, y: 0};
@@ -50,7 +51,8 @@ Product.DEFAULT = {
 // easily into a tree hierarchy, instead the reactive atom is the
 // parent trakMap object
 Product.prototype.restore = function (obj) {
-    this.name = obj.name;;
+    this.name = obj.name;
+    this.comment = obj.comment || "";
     this.weight = obj.weight;
     this.priority = obj.priority;
     this.level = obj.level | 0;
@@ -58,13 +60,13 @@ Product.prototype.restore = function (obj) {
     assert (() => this.priority >= 0);
     assert (() => this.weight > 0);
 };
-Product.prototype.draw = function () {
-    var lines = this.trakMap.lines;
-    var bubbles = this.trakMap.bubbles;
 
+
+// drawing
+Product.prototype.drawLine = function (parent) {
     var line = Draw.svgElem("g", {
         "class": "product"
-    }, this.trakMap.lines);
+    }, parent);
 
     var lineClass = "priorityLine priority-" + this.priority;
     Draw.svgElem("line", {
@@ -75,20 +77,46 @@ Product.prototype.draw = function () {
         "y2": this.end.y
     }, line);
 
-    Draw.svgElem("text", {
-        "x": (this.start.x + this.end.x) / 2,
-        "y": this.start.y - 4,
-        "text-anchor": "middle"
-    }, line).textContent = this.name;
+    var lineCentreX = (this.start.x + this.end.x) / 2
 
-    Draw.dateBubble(this.end, this.getEndValue(), [], bubbles);
+    var description = new ProductDesc ({
+        unclicker: this.trakMap.unclicker,
+        onChange: (obj) => this.modifyData(obj),
+        attrs: {
+            "class": "productData",
+            "transform": "translate(" + lineCentreX + ", " + this.start.y + ")"
+        }
+    }, this.name, this.weight, this.comment, this.priority);
+    description.draw(line);
+
+    Draw.menu (Draw.ALIGNCENTER, this.trakMap.unclicker, [{
+        "icon": "icons/arrow-left.svg",
+        "action": () => {}
+    },{
+        "icon": "icons/delete.svg",
+        "action": () => {}
+    },{
+        "icon": "icons/health.svg",
+        "action": () => {}
+    },{
+        "icon": "icons/arrow-right.svg",
+        "action": () => {}
+    }], {
+        "transform": "translate(" + lineCentreX + ", " + (this.start.y - 45) + ")"
+    }, line);
 
     if (this.incoming.length === 0) {
         Draw.straightLine (this.start, this.trakMap.origin, lineClass,
                            this.trakMap.connections);
     }
-    
+
+    return line;  
 };
+Product.prototype.drawBubble = function (parent) {
+    Draw.dateBubble(this.end, this.getEndValue(), parent);
+};
+
+
 Product.prototype.save = function () {
     return {
 	name: this.name,
@@ -112,6 +140,9 @@ Product.prototype.getWidth = function () {
 Product.prototype.getMinEndX = function () {
     return this.start.x + this.getWidth();
 };
+Product.prototype.hasDependencies = function () {
+    return this.incoming.length === 0;
+};
 
 // modification functions
 Product.prototype.removeDependency = function (dep) {
@@ -123,6 +154,20 @@ Product.prototype.removeDependent = function (dep) {
     assert (() => dep instanceof Dependency);
     
     Util.removeFromArray (this.outgoing, dep);
+};
+
+Product.prototype.modifyName = function (e, input) {
+    this.name = input.text;
+};
+
+// accepts a ProductDesc Object
+Product.prototype.modifyData = function (productDesc) {
+    this.name = productDesc.title;
+    this.weight = Math.max (Math.floor(productDesc.days), 1);
+    this.comment = productDesc.comment;
+    this.priority = Math.max(0, productDesc.priority);
+
+    this.trakMap.draw();
 };
 
 // testing

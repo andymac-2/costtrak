@@ -30,6 +30,14 @@ body {
 
 /* priority level pallette */
 
+/* menus */
+
+/* Menus */
+.menuEntry circle{
+    fill: hsl(180, 30%, 90%);
+    stroke: none;
+}
+
 /* default */
 .priorityLine{
     stroke: #4D4D4D;

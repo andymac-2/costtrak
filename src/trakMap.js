@@ -29,6 +29,8 @@ var TrakMap = function (obj, parent) {
     this.start;
     this.prioritiesList;
 
+    /** @type {Unclicker} */ this.unclicker = new Unclicker (this.elem);
+
     this.restore(obj);
 };
 TrakMap.HSPACE = 30;
@@ -71,28 +73,14 @@ TrakMap.prototype.draw = function () {
     this.bubbles =  Draw.svgElem("g", {"class": "TMBubbles"}, this.elem);
     this.menus =  Draw.svgElem("g", {"class": "TMMenus"}, this.elem);
 
-    // draw the start bubble here
-    Draw.dateBubble (this.origin, "0", [
-        {
-            icon: "icons/arrow-thick-right.svg",
-            text: "New Dependency",
-            action: function () {}
-        }, {
-            icon: "icons/pencil.svg",
-            text: "Edit",
-            action: function () {}
-        }
-    ], this.bubbles);
+    Draw.dateBubble (this.origin, "0", this.bubbles);
 
-    // draw the products
-    this.products.forEach (product => product.draw());
-
-    // draw the connexbctions
+    this.products.forEach (product => {
+        product.drawLine(this.lines);
+        product.drawBubble(this.bubbles);
+    });
     this.dependencies.forEach (dependency => dependency.draw());
-
-    // draw the bouding boxes
-
-    this.elem.addEventListener("click", this.deactivateOnUnclick.bind(this));
+    // TODO draw the bounding boxes
 };
 
 TrakMap.prototype.resolveCoordinates = function () {
@@ -166,9 +154,10 @@ TrakMap.prototype.resolvePriorityGroupOffsets = function (levelBounds) {
     this.yOffsets.length = levelBounds.length;
     for (var i = 0; i < this.prioritiesList.length; i++) {
         var priority = this.prioritiesList[i];
-        var offset = boundary - levelBounds[priority].minLevel * TrakMap.VSPACE;
-        var levelDiff = levelBounds[priority].maxLevel -
-            levelBounds[priority].minLevel;
+        var bounds = levelBounds[priority] || TrakMap.DEFAULTPRIORITYGROUPLEVEL;
+        var offset = boundary - bounds.minLevel * TrakMap.VSPACE;
+        var levelDiff = bounds.maxLevel -
+            bounds.minLevel;
         boundary += TrakMap.VSPACE * levelDiff + TrakMap.PRIORITYSPACE;
 
         this.yOffsets[priority] = offset;
@@ -176,6 +165,7 @@ TrakMap.prototype.resolvePriorityGroupOffsets = function (levelBounds) {
 };
 
 // static function resolves levels so that products do not overlap.
+TrakMap.DEFAULTPRIORITYGROUPLEVEL = {minLevel: 0, maxLevel: 0}
 TrakMap.resolvePriorityGroup = function (priorityGroup) {
     var levels = {}
     var minLevel = 0;
@@ -210,15 +200,6 @@ TrakMap.prototype.save = function () {
 };
 
 
-// general methods
-TrakMap.prototype.deactivateOnUnclick = function (event) {
-    var active = [].slice.call(this.elem.getElementsByClassName("active"));
-    for (var i = 0; i < active.length; i++) {
-        if (!active[i].parentNode.contains(event.target)) {
-            Draw.deactivate(active[i]);
-        }
-    }
-};
 // adds a rpoduct with the serialisation of obj. Call the draw method
 // to update the screen
 TrakMap.prototype.addProduct = function (obj) {
