@@ -36,7 +36,7 @@ window.onload = function () {
             {dependency: 6, dependent: 4}
         ],
         start: 0,
-        prioritiesList: [2, 0, 1]
+        prioritiesList: [2, 0, 1, 3]
     }, app);
 }
 

@@ -17,14 +17,13 @@ var Dependency = function (trakMap, index, obj) {
     //view
     this.elem;
 
-
-    this.trakMap.products[obj.dependency].outgoing.push(this);
-    this.trakMap.products[obj.dependent].incoming.push(this);
     this.restore (obj);
 }
 
-Dependency.prototype.draw = function () {
-    var connections = this.trakMap.connections;
+Dependency.prototype.draw = function (parent) {
+    var connections = Draw.svgElem("g", {
+        "class": "dependency"
+    }, parent);
 
     if (this.dependency.getEndValue() === this.dependent.getStartValue()){
         var cls = "priorityLine priority-" + this.dependent.priority;
@@ -37,12 +36,16 @@ Dependency.prototype.draw = function () {
             TrakMap.VSPACE, "priorityLine slack", connections);
     }
 
+    return connections;
 };
 
 // Serialisation methods
 Dependency.prototype.restore = function (obj) {
-    this.dependent = this.trakMap.products[obj.dependent];
     this.dependency = this.trakMap.products[obj.dependency];
+    this.dependency.outgoing.push(this);
+
+    this.dependent = this.trakMap.products[obj.dependent];
+    this.dependent.incoming.push(this);
 };
 Dependency.prototype.save = function () {
     assert(() => this.trakMap.products[this.dependency.index] ===

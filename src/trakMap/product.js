@@ -21,7 +21,7 @@ var Product = function (graph, index, obj) {
     this.start = {x: 0, y: 0};
     this.end = {x: 0, y: 0};
     
-    this.index = 0;
+    this.index = index;
     this.trakMap = graph;
 
     this.restore(obj);
@@ -94,7 +94,7 @@ Product.prototype.drawLine = function (parent) {
         "action": () => {}
     },{
         "icon": "icons/delete.svg",
-        "action": () => {}
+        "action": () => this.deleteThis()
     },{
         "icon": "icons/health.svg",
         "action": () => {}
@@ -145,15 +145,23 @@ Product.prototype.hasDependencies = function () {
 };
 
 // modification functions
+Product.prototype.deleteThis = function () {
+    this.trakMap.removeProduct(this);
+    this.trakMap.draw();
+};
 Product.prototype.removeDependency = function (dep) {
     assert (() => dep instanceof Dependency);
-    
-    Util.removeFromArray (this.outgoing, dep);
+    // we use this instead of Util.removeFromArray because this
+    // function is called from this.incoming.forEach. If we use
+    // Util.removeFromArray, we modify the array in place, and it
+    // becomes screwy. This way, we create a new array, so we don't
+    // interfere with the forEach call
+    this.incoming = this.incoming.filter(elem => elem !==  dep);
 };
 Product.prototype.removeDependent = function (dep) {
     assert (() => dep instanceof Dependency);
-    
-    Util.removeFromArray (this.outgoing, dep);
+    // see comment in removeDependency
+    this.outgoing = this.outgoing.filter(elem => elem !== dep);
 };
 
 Product.prototype.modifyName = function (e, input) {
@@ -165,7 +173,12 @@ Product.prototype.modifyData = function (productDesc) {
     this.name = productDesc.title;
     this.weight = Math.max (Math.floor(productDesc.days), 1);
     this.comment = productDesc.comment;
-    this.priority = Math.max(0, productDesc.priority);
+
+    var newPriority = Math.max(0, productDesc.priority);
+    if (this.priority !== newPriority) {
+        this.priority = newPriority
+        this.level = 0;
+    }
 
     this.trakMap.draw();
 };

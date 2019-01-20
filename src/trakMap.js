@@ -79,7 +79,7 @@ TrakMap.prototype.draw = function () {
         product.drawLine(this.lines);
         product.drawBubble(this.bubbles);
     });
-    this.dependencies.forEach (dependency => dependency.draw());
+    this.dependencies.forEach (dependency => dependency.draw(this.connections));
     // TODO draw the bounding boxes
 };
 
@@ -103,7 +103,7 @@ TrakMap.prototype.resolveCoordinates = function () {
 
 
     // Step 2: resolve x coordinates
-    var sortedProducts = this.products.sort(Product.compare);
+    var sortedProducts = this.products.slice().sort(Product.compare);
     var heap = new MinHeap (Product.compareEnds);
     var cursor = 0;
     var lastValue = 0;
@@ -217,7 +217,7 @@ TrakMap.prototype.addDependency = function (obj) {
 TrakMap.prototype.removeDependency = function (dep) {
     assert (() => dep instanceof Dependency);
 
-    dep.dependency.removeDependant(dep);
+    dep.dependency.removeDependent(dep);
     dep.dependent.removeDependency(dep);
 
     Util.removeFromIndexedArray(this.dependencies, dep);
@@ -229,13 +229,8 @@ TrakMap.prototype.removeProduct = function (prod) {
     assert (() => prod === this.products[prod.index]);
 
     // remove dependencies.
-    for (var i = 0; i < prod.incoming.length; i++) {
-        this.removeDependency(prod.incoming[i]);
-    }
-
-    for (i = 0; i < prod.outgoing.length; i++) {
-        this.removeDependency(prod.outgoing[i]);
-    }
-
+    prod.incoming.forEach(elem => this.removeDependency(elem));
+    prod.outgoing.forEach(elem => this.removeDependency(elem));
+    
     Util.removeFromIndexedArray (this.products, prod);
 };
