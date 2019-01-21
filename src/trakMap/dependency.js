@@ -25,6 +25,8 @@ Dependency.prototype.draw = function (parent) {
         "class": "dependency"
     }, parent);
 
+    connections.addEventListener("dblclick", () => this.deleteDraw());
+
     if (this.dependency.getEndValue() === this.dependent.getStartValue()){
         var cls = "priorityLine priority-" + this.dependent.priority;
         this.elem = Draw.straightLine(
@@ -37,6 +39,11 @@ Dependency.prototype.draw = function (parent) {
     }
 
     return connections;
+};
+
+Dependency.prototype.deleteDraw  = function () {
+    this.trakMap.removeDependency(this);
+    this.trakMap.draw();
 };
 
 // Serialisation methods

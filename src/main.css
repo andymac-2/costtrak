@@ -43,6 +43,14 @@ body {
     stroke: #4D4D4D;
     fill: #4D4D4D;
     stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.priorityLine:hover {
+    stroke-width: 6;
+}
+.priorityLine.slack:hover {
+    stroke-width: 4;
 }
 
 .priorityLine.priority-0 {

@@ -28,6 +28,9 @@ var TrakMap = function (obj, parent) {
     this.dependencies = [];
     this.start;
     this.prioritiesList;
+    
+    this.selection = null;
+    this.selType = TrakMap.SELNOTHING;
 
     /** @type {Unclicker} */ this.unclicker = new Unclicker (this.elem);
 
@@ -73,7 +76,8 @@ TrakMap.prototype.draw = function () {
     this.bubbles =  Draw.svgElem("g", {"class": "TMBubbles"}, this.elem);
     this.menus =  Draw.svgElem("g", {"class": "TMMenus"}, this.elem);
 
-    Draw.dateBubble (this.origin, "0", this.bubbles);
+    var dateBubble = new DateBubble (this, null);
+    dateBubble.draw(this.bubbles);
 
     this.products.forEach (product => {
         product.drawLine(this.lines);
@@ -199,18 +203,71 @@ TrakMap.prototype.save = function () {
     };
 };
 
+// selection state in order of high to low priority.
+TrakMap.SELDEPENDENCY = 0;
+TrakMap.SELDEPENDENT = 1;
+TrakMap.SELNORMAL = 2;
+TrakMap.SELNOTHING = 3;
+TrakMap.prototype.select = function (type, obj) {
+    // I just want to lament the absence of sum types in most
+    // imperative languages at this point, as this would have been
+    // much cleaner with them
+    if (obj === this.selection && type >= this.selType) {
+        return;
+    }
+    if (type === TrakMap.SELNORMAL &&
+             this.selType === TrakMap.SELDEPENDENCY &&
+             obj !== this.selection)
+    {
+        assert (() => this.selection instanceof Product);
+        assert (() => obj instanceof Product);
+        this.newDependency (this.selection, obj);
 
-// adds a rpoduct with the serialisation of obj. Call the draw method
+        this.selection = null
+        this.selType = TrakMap.SELNOTHING;
+        this.draw();
+    }
+    else if (type === TrakMap.SELNORMAL &&
+             this.selType === TrakMap.SELDEPENDENT &&
+             obj !== this.selection) {
+        assert (() => this.selection instanceof Product);
+        assert (() => obj instanceof Product);
+        this.newDependency (obj, this.selection);
+
+        this.selection = null
+        this.selType = TrakMap.SELNOTHING;
+        this.draw();
+    }
+    else {
+        this.selection = obj;
+        this.selType = type;
+    }
+};
+
+// adds a product with the serialisation of obj. Call the draw method
 // to update the screen
 TrakMap.prototype.addProduct = function (obj) {
-    this.products.push(new Product (this, this.products.length, obj));
+    var product = new Product (this, this.products.length, obj);
+    this.products.push(product);
+    return product;
 };
 
 // adds a dependency with the serialisation of obj. Call the draw
 // method to update the screen
 TrakMap.prototype.addDependency = function (obj) {
-    this.dependencies.push(
-        new Dependency (this, this.dependencies.length, obj));
+    var dep =  new Dependency (this, this.dependencies.length, obj);
+    this.dependencies.push(dep);
+    return dep;
+};
+
+TrakMap.prototype.newDependency = function (dependency, dependent) {
+    assert (() => this.products[dependency.index] === dependency)
+    assert (() => this.products[dependent.index] === dependent)
+    
+    return this.addDependency ({
+        "dependency": dependency.index,
+        "dependent": dependent.index
+    });
 };
 
 // removes a dependency. Call the draw method to update the screen
@@ -231,6 +288,9 @@ TrakMap.prototype.removeProduct = function (prod) {
     // remove dependencies.
     prod.incoming.forEach(elem => this.removeDependency(elem));
     prod.outgoing.forEach(elem => this.removeDependency(elem));
+
+    assert (() => prod.incoming.length === 0);
+    assert (() => prod.outgoing.length === 0);
     
     Util.removeFromIndexedArray (this.products, prod);
 };

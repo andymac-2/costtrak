@@ -24,6 +24,8 @@ var Product = function (graph, index, obj) {
     this.index = index;
     this.trakMap = graph;
 
+    this.dateBubble = new DateBubble (this.trakMap, this);
+
     this.restore(obj);
 };
 
@@ -68,6 +70,10 @@ Product.prototype.drawLine = function (parent) {
         "class": "product"
     }, parent);
 
+    line.addEventListener("click", () => {
+        this.trakMap.select (TrakMap.SELNORMAL, this);
+    });
+
     var lineClass = "priorityLine priority-" + this.priority;
     Draw.svgElem("line", {
         "class": lineClass,
@@ -91,21 +97,22 @@ Product.prototype.drawLine = function (parent) {
 
     Draw.menu (Draw.ALIGNCENTER, this.trakMap.unclicker, [{
         "icon": "icons/arrow-left.svg",
-        "action": () => {}
-    },{
+        "action": () => {
+            this.trakMap.select (TrakMap.SELDEPENDENT, this);
+        }
+    }, {
         "icon": "icons/delete.svg",
         "action": () => this.deleteThis()
-    },{
-        "icon": "icons/health.svg",
-        "action": () => {}
-    },{
+    }, {
         "icon": "icons/arrow-right.svg",
-        "action": () => {}
+        "action": () => {
+            this.trakMap.select (TrakMap.SELDEPENDENCY, this);
+        }
     }], {
         "transform": "translate(" + lineCentreX + ", " + (this.start.y - 45) + ")"
     }, line);
 
-    if (this.incoming.length === 0) {
+    if (!this.hasValidDependencies()) {
         Draw.straightLine (this.start, this.trakMap.origin, lineClass,
                            this.trakMap.connections);
     }
@@ -113,7 +120,7 @@ Product.prototype.drawLine = function (parent) {
     return line;  
 };
 Product.prototype.drawBubble = function (parent) {
-    Draw.dateBubble(this.end, this.getEndValue(), parent);
+    this.dateBubble.draw(parent);
 };
 
 
@@ -128,6 +135,11 @@ Product.prototype.save = function () {
 Product.prototype.toJSON = Product.prototype.save;
 
 // query functions
+// a dependency is considered valid if it is higher or equal priority
+Product.prototype.hasValidDependencies = function () {
+    return this.incoming.some(dep => dep.dependency.priority <= this.priority);
+};
+
 Product.prototype.getStartValue = function () {
     return this.value;
 };
