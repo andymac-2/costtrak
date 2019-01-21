@@ -94,7 +94,8 @@ TrakMap.prototype.resolveCoordinates = function () {
 
     //TODO: proper circular dependency error handling
     if (priorityProducts.length === 0) {
-        return;
+        alert ("Circular Dependency");
+        throw new Error("Corcular Dependency");
     }
 
     var levelBounds = priorityProducts.map (TrakMap.resolvePriorityGroup);
@@ -177,7 +178,10 @@ TrakMap.resolvePriorityGroup = function (priorityGroup) {
 
     priorityGroup.forEach(product => {
         while (levels[product.level] && levels[product.level] > product.getStartValue()) {
-            product.level += product.level > 0 ? 1 : -1;
+            // TODO move product up/down.
+            assert (() => product.direction === Product.GOINGUP ||
+                    product.direction === Product.GOINGDOWN)
+            product.level += product.direction;
         }
         levels[product.level] = product.getEndValue();
         minLevel = product.level < minLevel ? product.level : minLevel;

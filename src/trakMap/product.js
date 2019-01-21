@@ -15,6 +15,7 @@ var Product = function (graph, index, obj) {
     this.comment = "";
     this.name = "";
     this.level = 0;
+    this.direction = Product.GOINGUP;
     this.weight = 0;
     
     // drawing properties
@@ -28,6 +29,8 @@ var Product = function (graph, index, obj) {
 
     this.restore(obj);
 };
+Product.GOINGUP = -1;
+Product.GOINGDOWN = 1;
 
 // static functions
 Product.compare = function (a, b) {
@@ -94,7 +97,7 @@ Product.prototype.drawLine = function (parent) {
         }
     }, this.name, this.weight, this.comment, this.priority);
     description.draw(line);
-
+    
     Draw.menu (Draw.ALIGNCENTER, this.trakMap.unclicker, [{
         "icon": "icons/arrow-left.svg",
         "action": () => {
@@ -103,6 +106,12 @@ Product.prototype.drawLine = function (parent) {
     }, {
         "icon": "icons/delete.svg",
         "action": () => this.deleteThis()
+    }, {
+        "icon": "icons/move-up.svg",
+        "action": () => this.moveUp()
+    }, {
+        "icon": "icons/move-down.svg",
+        "action": () => this.moveDown()
     }, {
         "icon": "icons/arrow-right.svg",
         "action": () => {
@@ -157,10 +166,6 @@ Product.prototype.hasDependencies = function () {
 };
 
 // modification functions
-Product.prototype.deleteThis = function () {
-    this.trakMap.removeProduct(this);
-    this.trakMap.draw();
-};
 Product.prototype.removeDependency = function (dep) {
     assert (() => dep instanceof Dependency);
     // we use this instead of Util.removeFromArray because this
@@ -180,6 +185,8 @@ Product.prototype.modifyName = function (e, input) {
     this.name = input.text;
 };
 
+
+// user functions.
 // accepts a ProductDesc Object
 Product.prototype.modifyData = function (productDesc) {
     this.name = productDesc.title;
@@ -192,6 +199,22 @@ Product.prototype.modifyData = function (productDesc) {
         this.level = 0;
     }
 
+    this.trakMap.draw();
+};
+
+Product.prototype.deleteThis = function () {
+    this.trakMap.removeProduct(this);
+    this.trakMap.draw();
+};
+
+Product.prototype.moveUp = function () {
+    this.level += Product.GOINGUP;
+    this.direction = Product.GOINGUP;
+    this.trakMap.draw();
+};
+Product.prototype.moveDown = function () {
+    this.level += Product.GOINGDOWN;
+    this.direction = Product.GOINGDOWN;
     this.trakMap.draw();
 };
 
