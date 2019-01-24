@@ -7,8 +7,8 @@ var Product = function (graph, index, obj) {
     // graph properties (state)
     this.outgoing = [];
     this.incoming = [];
-    this.priority = 0;
-    this.value = 0;
+    this.priorityGroup;
+    this.value;
     this.visited;
 
     // user properties (state)
@@ -48,23 +48,30 @@ Product.compareEnds = function (a, b) {
 Product.DEFAULT = {
     name: "Untitled",
     weight: 7,
-    priority: 0,
+    priorityGroup: 0,
     level: 0
 };
 
-// this is not a reactive or serialisable element, as it does not fit
-// easily into a tree hierarchy, instead the reactive atom is the
-// parent trakMap object
 Product.prototype.restore = function (obj) {
     this.name = obj.name;
     this.comment = obj.comment || "";
     this.weight = obj.weight;
-    this.priority = obj.priority;
+    this.priorityGroup = this.trakMap.priorityGroups[obj.priorityGroup];
+    this.priorityGroup.addProduct(this);
+    
     this.level = obj.level | 0;
 
-    assert (() => this.priority >= 0);
     assert (() => this.weight > 0);
 };
+Product.prototype.save = function () {
+    return {
+        "name": this.name,
+        "weight": this.weight,
+        "priorityGroup": this.priorityGroup.index,
+        "level": this.level
+    };
+};
+Product.prototype.toJSON = Product.prototype.save;
 
 
 // drawing
@@ -77,7 +84,7 @@ Product.prototype.drawLine = function (parent) {
         this.trakMap.select (TrakMap.SELNORMAL, this);
     });
 
-    var lineClass = "priorityLine priority-" + this.priority;
+    var lineClass = "priorityLine priority-" + this.getPriority();
     Draw.svgElem("line", {
         "class": lineClass,
         "x1": this.start.x,
@@ -132,23 +139,14 @@ Product.prototype.drawBubble = function (parent) {
     this.dateBubble.draw(parent);
 };
 
-
-Product.prototype.save = function () {
-    return {
-	name: this.name,
-	weight: this.weight,
-	priority: this.priority,
-        level: this.level
-    };
-};
-Product.prototype.toJSON = Product.prototype.save;
-
 // query functions
 // a dependency is considered valid if it is higher or equal priority
 Product.prototype.hasValidDependencies = function () {
-    return this.incoming.some(dep => dep.dependency.priority <= this.priority);
+    return this.incoming.some(dep => dep.dependency.getPriority() <= this.getPriority());
 };
-
+Product.prototype.getPriority = function () {
+    return this.priorityGroup.priority;
+};
 Product.prototype.getStartValue = function () {
     return this.value;
 };
@@ -166,6 +164,11 @@ Product.prototype.hasDependencies = function () {
 };
 
 // modification functions
+Product.prototype.resolveYCoord = function () {
+    let offset = this.priorityGroup.yOffset;
+    let value = this.level * TrakMap.VSPACE;
+    this.start.y = this.end.y = value + offset;
+};
 Product.prototype.removeDependency = function (dep) {
     assert (() => dep instanceof Dependency);
     // we use this instead of Util.removeFromArray because this
@@ -193,12 +196,6 @@ Product.prototype.modifyData = function (productDesc) {
     this.weight = Math.max (Math.floor(productDesc.days), 1);
     this.comment = productDesc.comment;
 
-    var newPriority = Math.max(0, productDesc.priority);
-    if (this.priority !== newPriority) {
-        this.priority = newPriority
-        this.level = 0;
-    }
-
     this.trakMap.draw();
 };
 
@@ -221,13 +218,13 @@ Product.prototype.moveDown = function () {
 // testing
 Product.prototype.checkInvariants = function () {
     assert (() => this.weight > 0);
-    assert (() => this.priority >= 0);
+    assert (() => this.getPriority() >= 0);
     assert (() => this.level >= 0);
 
     var maxValue = 0;
     this.incoming.forEach(dep => {
         var testValue = dep.dependency.getEndValue();
-        if (this.priority <= dep.dependency.priority) {
+        if (this.getPriority() <= dep.dependency.getPriority()) {
             maxvalue = testvalue > maxvalue ? testvalue : maxvalue;
         }
         assert (() => dep.dependent === this);

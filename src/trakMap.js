@@ -20,48 +20,47 @@ var TrakMap = function (obj, parent) {
     this.menus;
 
     //View model (calculated)
-    this.yOffsets;
     this.origin;
 
     // graph elements (state)
     this.products = [];
     this.dependencies = [];
+    this.priorityGroups = [];
     this.start;
-    this.prioritiesList;
-    
+
+    // selections
     this.selection = null;
     this.selType = TrakMap.SELNOTHING;
 
     /** @type {Unclicker} */ this.unclicker = new Unclicker (this.elem);
-
     this.restore(obj);
 };
 TrakMap.HSPACE = 30;
 TrakMap.MINPRODUCTWIDTH = 150;
 TrakMap.UNITVALUEWIDTH = 10;
 TrakMap.VSPACE = 70;
-TrakMap.PRIORITYSPACE = 90;
+TrakMap.PRIORITYSPACE = 130;
 TrakMap.MARGIN = 30;
 
 // reactive functions
 // obj: {prodicts, dependencies, start, prioritiesList};
 TrakMap.prototype.restore = function (obj) {
-    var flatProducts = obj.products;
-    var flatDependencies = obj.dependencies;
     this.start = obj.start;
-    this.prioritiesList = obj.prioritiesList
+
+    this.priorityGroups = [];
+    obj.priorityGroups.forEach ((priorityGroup, i) => {
+        this.priorityGroups.push(new PriorityGroup (this, i, priorityGroup));
+    });
 
     this.products = [];
-
-    for (var i = 0; i < flatProducts.length; i++) {
-        this.products.push(new Product (this, i, flatProducts[i]));
-    };
+    obj.products.forEach((product, i) => {
+        this.products.push(new Product (this, i, product));
+    });
 
     this.dependencies = [];
-
-    for (i = 0; i < flatDependencies.length; i++) {
-        this.dependencies.push(new Dependency (this, i, flatDependencies[i]));
-    }
+    obj.dependencies.forEach((dependency, i) => {
+        this.dependencies.push(new Dependency (this, i, dependency));
+    });
 
     this.draw();
 };
@@ -88,27 +87,16 @@ TrakMap.prototype.draw = function () {
 };
 
 TrakMap.prototype.resolveCoordinates = function () {
-
+    //TODO: rewrite for priorityGroups.
+    
     // Step 1: resolve y coordinates
-    var priorityProducts = nodeWeightedGraph.greedySort(this.products);
+    let sortedProducts = nodeWeightedGraph.greedySort(this.products);
 
-    //TODO: proper circular dependency error handling
-    if (priorityProducts.length === 0) {
-        alert ("Circular Dependency");
-        throw new Error("Corcular Dependency");
-    }
-
-    var levelBounds = priorityProducts.map (TrakMap.resolvePriorityGroup);
-    this.resolvePriorityGroupOffsets(levelBounds);
-
-    this.products.forEach (product => {
-        product.start.y = product.end.y =
-            this.getYCoord(product.priority, product.level);
-    });
-
+    this.resolvePriorityLevels ();
+    this.resolvePriorityGroupOffsets();
+    this.resolveProductYValues ();
 
     // Step 2: resolve x coordinates
-    var sortedProducts = this.products.slice().sort(Product.compare);
     var heap = new MinHeap (Product.compareEnds);
     var cursor = 0;
     var lastValue = 0;
@@ -150,52 +138,29 @@ TrakMap.prototype.resolveCoordinates = function () {
         min.end.x = cursor;
     }
 
-    this.origin = {x: 0, y: this.getYCoord (0, 0)};
+    // TODO: redefine default origin
+    this.origin = {x: 0, y: this.products[0].start.y};
 };
 
-TrakMap.prototype.resolvePriorityGroupOffsets = function (levelBounds) {
+TrakMap.prototype.resolvePriorityGroupOffsets = function () {
     this.yOffsets = [];
-    var boundary = TrakMap.MARGIN;
-    this.yOffsets.length = levelBounds.length;
-    for (var i = 0; i < this.prioritiesList.length; i++) {
-        var priority = this.prioritiesList[i];
-        var bounds = levelBounds[priority] || TrakMap.DEFAULTPRIORITYGROUPLEVEL;
-        var offset = boundary - bounds.minLevel * TrakMap.VSPACE;
-        var levelDiff = bounds.maxLevel -
-            bounds.minLevel;
+    this.yOffsets.length = this.priorityGroups.length;
+    
+    let boundary = TrakMap.MARGIN;
+    this.priorityGroups.forEach (priorityGroup => {
+        priorityGroup.yOffset = boundary - priorityGroup.minLevel * TrakMap.VSPACE;
+        
+        let levelDiff = priorityGroup.maxLevel - priorityGroup.minLevel;
         boundary += TrakMap.VSPACE * levelDiff + TrakMap.PRIORITYSPACE;
-
-        this.yOffsets[priority] = offset;
-    }
-};
-
-// static function resolves levels so that products do not overlap.
-TrakMap.DEFAULTPRIORITYGROUPLEVEL = {minLevel: 0, maxLevel: 0}
-TrakMap.resolvePriorityGroup = function (priorityGroup) {
-    var levels = {}
-    var minLevel = 0;
-    var maxLevel = 0;
-
-    priorityGroup.forEach(product => {
-        while (levels[product.level] && levels[product.level] > product.getStartValue()) {
-            // TODO move product up/down.
-            assert (() => product.direction === Product.GOINGUP ||
-                    product.direction === Product.GOINGDOWN)
-            product.level += product.direction;
-        }
-        levels[product.level] = product.getEndValue();
-        minLevel = product.level < minLevel ? product.level : minLevel;
-        maxLevel = product.level > maxLevel ? product.level : maxLevel;
     });
-
-    return {minLevel: minLevel, maxLevel: maxLevel};
 };
-
-
-TrakMap.prototype.getYCoord = function (priority, level) {
-    var offset = this.yOffsets[priority];
-    var value = level * TrakMap.VSPACE;
-    return value + offset;
+TrakMap.prototype.resolvePriorityLevels = function () {
+    this.priorityGroups.forEach (priorityGroup => {
+        priorityGroup.resolveLevels();
+    });
+};
+TrakMap.prototype.resolveProductYValues = function () {
+    this.products.forEach (product => product.resolveYCoord());
 };
 
 TrakMap.prototype.save = function () {

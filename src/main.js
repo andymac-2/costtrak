@@ -1,19 +1,19 @@
 window.onload = function () {
-    runTestSuite();
+    //runTestSuite();
     var app = document.getElementById ("app");
     
     var trakMap = new TrakMap ({
         products: [
-            {name: "one", weight: 4, priority: 0},
-            {name: "two", weight: 30, priority: 0},
-            {name: "three", weight: 3, priority: 0},
-            {name: "four", weight: 30, priority: 0},
-            {name: "five", weight: 8, priority: 2},
-            {name: "six", weight: 3, priority: 1},
-            {name: "seven", weight: 3, priority: 1},
-            {name: "eight", weight: 10, priority: 0},
-            {name: "nine", weight: 4, priority: 1},
-            {name: "ten", weight: 35, priority: 1}
+            {name: "one", weight: 4, priorityGroup: 0},
+            {name: "two", weight: 30, priorityGroup: 0},
+            {name: "three", weight: 3, priorityGroup: 0},
+            {name: "four", weight: 30, priorityGroup: 0},
+            {name: "five", weight: 8, priorityGroup: 2},
+            {name: "six", weight: 3, priorityGroup: 1},
+            {name: "seven", weight: 3, priorityGroup: 1},
+            {name: "eight", weight: 10, priorityGroup: 0},
+            {name: "nine", weight: 4, priorityGroup: 1},
+            {name: "ten", weight: 35, priorityGroup: 1}
         ],
         dependencies: [
             {dependency: 6, dependent: 8},
@@ -36,7 +36,13 @@ window.onload = function () {
             {dependency: 6, dependent: 4}
         ],
         start: 0,
-        prioritiesList: [2, 0, 1, 3]
+        priorityGroups: [
+            {name: "Group1", priority: 0},
+            {name: "Group2", priority: 1},
+            {name: "Group3", priority: 2},
+            {name: "Group4", priority: 3},
+            {name: "Group5", priority: 4}
+        ]
     }, app);
 }
 

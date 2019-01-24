@@ -31,30 +31,17 @@ var nodeWeightedGraph = {};
 @type {function([WeightedNode]):[WeightedNode]}
 */
 nodeWeightedGraph.topoSort = function (nodes) {
-    var active = [];
-    var result = [];
-
     // find all nodes which have no dependencies, also set all nodes
     // visited to "false"
-    for (var i = 0; i < nodes.length; i++) {
-        nodes[i].visited = false;
-    }
-
-    for (var i = 0; i < nodes.length; i++) {
-        if (this.fulfilledDependencies(nodes[i])) {
-            active.push(nodes[i]);
-        }
-    }
+    nodes.forEach(node => node.visited = false)
+    let active = nodes.filter(node => this.fulfilledDependencies(node));
 
     // for each element in the active list, check all of it's
     // dependants. If any of the dependants dependencies have all been
     // fulfilled and it has not been visited yet, add it to the active
     // list.
     
-    for (i = 0; i < active.length; i++) {
-        if (active[i].visited !== true) {
-            result.push(active[i]);
-        }
+    for (var i = 0; i < active.length; i++) {
         active[i].visited = true;
 
         var outgoing = active[i].outgoing;
@@ -63,30 +50,26 @@ nodeWeightedGraph.topoSort = function (nodes) {
             var dependent = outgoing[j].dependent;
             if (this.fulfilledDependencies (dependent) &&
                  dependent.visited === false)
-            {           
+            {
+                dependent.visited = true;
                 active.push(dependent);
             }
         }
     }
 
     // cyclic graph.
-    if (result.length !== nodes.length) {
-        return [];
+    if (active.length !== nodes.length) {
+        //TODO: custom error type
+        throw Error ("Circular Dependency");
     }
 
-    return result;
+    return active;
 };
 nodeWeightedGraph.fulfilledDependencies =  function (node) {
-    for (var i = 0; i < node.incoming.length; i++) {
-        var dependency = node.incoming[i].dependency;
-        
-        if (dependency.priority <= node.priority &&
-            dependency.visited === false)
-        {
-            return false;
-        }
-    }
-    return true;
+    return node.incoming.every(dep => {
+        return dep.dependency.visited === true ||
+            dep.dependency.getPriority() > node.getPriority()
+    });
 };
 
 /** sort nodes by their minimal possible value.
@@ -95,43 +78,18 @@ nodeWeightedGraph.fulfilledDependencies =  function (node) {
 nodeWeightedGraph.greedySort = function (nodes) {
     var topoSorted = this.topoSort (nodes);
 
-    if (topoSorted.length === 0) {
-        return [];
-    }
-
-    for (var i = 0; i < topoSorted.length; i++) {
-        var node = topoSorted [i];
-        var incoming = node.incoming;
+    topoSorted.forEach(node => {
         node.value = 0;
-        
-        for (var j = 0; j < incoming.length; j++) {
-            var dependency = incoming[j].dependency;
-            if (dependency.priority <= node.priority) {                
-                var currentVal = dependency.value + dependency.weight;                
-                node.value = node.value > currentVal ? node.value : currentVal;
+
+        node.incoming.forEach(dep => {
+            let dependency = dep.dependency;
+            if (dependency.getPriority() <= node.getPriority()) {                                       
+                node.value = Math.max(node.value, dependency.getEndValue());
             }
-        }
-    }
-
-    var priorities = [];
-
-    // separate by prioritites
-    topoSorted.forEach(product => {
-        var prio = product.priority;
-        if (!priorities[prio]) {
-            priorities[prio] = [product];
-        }
-        else {
-            priorities[prio].push(product);
-        }
+        });
     });
 
-    // sort within priorities by value
-    priorities.forEach(productList => {
-        productList.sort(Product.compareByValue);
-    });
-
-    return priorities;
+    return topoSorted.sort(Product.compare);
 };
 
 
@@ -148,7 +106,7 @@ var nWGTest = function (nodes) {
         for (var j = 0; j < incoming.length; j++) {
             var testvalue = incoming[j].dependency.value +
                 incoming[j].dependency.weight;
-            if (node.priority <= incoming[j].dependency.priority) {
+            if (node.getPriority() <= incoming[j].dependency.getPriority()) {
                 maxvalue = testvalue > maxvalue ? testvalue : maxvalue;
             }
         }
@@ -163,47 +121,53 @@ var nWGTests = function () {
         
         "Single object": nWGTest.bind(null, new TrakMap ({
             products: [
-                {name: "one", weight: 2, priority: 0}
+                {name: "one", weight: 2, priorityGroup: 0}
             ],
             dependencies: [],
             start: 0,
-            prioritiesList: [0]
+            priorityGroups: [
+                {name: "Group1", priority: 0}
+            ]
         }).products),
         
         "Single dependency": nWGTest.bind(null, new TrakMap ({
             products: [
-                {name: "one", weight: 2, priority: 0},
-                {name: "two", weight: 2, priority: 0}
+                {name: "one", weight: 2, priorityGroup: 0},
+                {name: "two", weight: 2, priorityGroup: 0}
             ],
             dependencies: [
                 {dependency: 0, dependent: 1}
             ],
             start: 0,
-            prioritiesList: [0]
+            priorityGroups: [
+                {name: "Group1", priority: 0}
+            ]
         }).products),
         
         "Circular dependency": nWGTest.bind(null, new TrakMap ({
             products: [
-                {name: "one", weight: 2, priority: 0},
-                {name: "two", weight: 2, priority: 0}
+                {name: "one", weight: 2, priorityGroup: 0},
+                {name: "two", weight: 2, priorityGroup: 0}
             ],
             dependencies: [
                 //   {dependency: 0, dependent: 1},
                 {dependency: 1, dependent: 0}
             ],
             start: 0,
-            prioritiesList: [0]
+            priorityGroups: [
+                {name: "Group1", priority: 0}
+            ]
         }).products),
 
         "Complicated dependencies": nWGTest.bind(null, new TrakMap ({
             products: [
-                {name: "one", weight: 4, priority: 0},
-                {name: "two", weight: 30, priority: 0},
-                {name: "three", weight: 3, priority: 0},
-                {name: "four", weight: 30, priority: 0},
-                {name: "five", weight: 8, priority: 0},
-                {name: "six", weight: 3, priority: 0},
-                {name: "seven", weight: 3, priority: 0}
+                {name: "one", weight: 4, priorityGroup: 0},
+                {name: "two", weight: 30, priorityGroup: 0},
+                {name: "three", weight: 3, priorityGroup: 0},
+                {name: "four", weight: 30, priorityGroup: 0},
+                {name: "five", weight: 8, priorityGroup: 0},
+                {name: "six", weight: 3, priorityGroup: 0},
+                {name: "seven", weight: 3, priorityGroup: 0}
             ],
             dependencies: [
                 {dependency: 0, dependent: 1},
@@ -220,7 +184,9 @@ var nWGTests = function () {
                 {dependency: 6, dependent: 4}
             ],
             start: 0,
-            prioritiesList: [0]
+            priorityGroups: [
+                {name: "Group1", priority: 0}
+            ]
         }).products)
     });
 }

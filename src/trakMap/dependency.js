@@ -28,7 +28,7 @@ Dependency.prototype.draw = function (parent) {
     connections.addEventListener("dblclick", () => this.deleteDraw());
 
     if (this.dependency.getEndValue() === this.dependent.getStartValue()){
-        var cls = "priorityLine priority-" + this.dependent.priority;
+        var cls = "priorityLine priority-" + this.dependent.getPriority();
         this.elem = Draw.straightLine(
             this.dependent.start, this.dependency.end, cls, connections);      
     }
