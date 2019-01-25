@@ -218,7 +218,7 @@ TrakMap.prototype.select = function (type, obj) {
             if (err instanceof CircularDependency) {
                 this.removeDependency (dependency)
                 this.draw();
-                alert ("Error: circular dependency");
+                alert ("Error: Circular dependency");
             }
             else {
                 throw err;
@@ -282,4 +282,8 @@ TrakMap.prototype.removeProduct = function (prod) {
     assert (() => prod.outgoing.length === 0);
     
     Util.removeFromIndexedArray (this.products, prod);
+};
+
+TrakMap.prototype.removePriorityGroup = function (priorityGroup) {
+    Util.removeFromIndexedArray (this.priorityGroups, priorityGroup);
 };

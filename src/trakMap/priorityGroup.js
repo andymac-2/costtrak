@@ -66,13 +66,13 @@ PriorityGroup.prototype.draw = function (parent) {
 
     Draw.menu (Draw.ALIGNLEFT, this.trakMap.unclicker, [{
         "icon": "icons/delete.svg",
-        "action": () => {} // TODO flesh method
+        "action": () => this.deleteThis()
     }, {
         "icon": "icons/move-up.svg",
-        "action": () => this.moveUp() // TODO flashe method
+        "action": () => this.moveUp()
     }, {
         "icon": "icons/move-down.svg",
-        "action": () => this.moveDown() // TODO, flesh method
+        "action": () => this.moveDown()
     }], {
         "transform": "translate(" + left + ", " + (top - 45) + ")"
     }, productDesc);
@@ -92,8 +92,9 @@ PriorityGroup.prototype.getBottom = function () {
 
 // modifications
 PriorityGroup.prototype.removeProduct = function (product) {
-    assert (() => product.priorityGroup === this);    
-    Util.removeFromArray(this.products, product);
+    assert (() => product.priorityGroup === this);
+    this.products = this.products.filter(elem => elem !== product);
+    // Util.removeFromArray(this.products, product);
 };
 
 PriorityGroup.prototype.addProduct = function (product) {
@@ -161,6 +162,12 @@ PriorityGroup.prototype.modifyData = function (priorityGroupDesc) {
             throw err;
         }
     }
+};
+PriorityGroup.prototype.deleteThis = function () {
+    this.products.forEach (prod => this.trakMap.removeProduct(prod));
+    this.trakMap.removePriorityGroup(this);
+
+    this.trakMap.draw();
 };
 PriorityGroup.prototype.moveUp = function () {
     assert (() => this.trakMap.priorityGroups[this.index] === this);
