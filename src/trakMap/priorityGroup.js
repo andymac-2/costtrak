@@ -10,8 +10,8 @@ var PriorityGroup  = function (trakMap, index, obj) {
 
     // calculated
     this.products = [];
-    this.minLevel = 0;
-    this.maxLevel = 0;
+    this.minLevel = Number.MAX_SAFE_INTEGER;
+    this.maxLevel = Number.MIN_SAFE_INTEGER;
     this.yOffset = 0;
 
     this.restore (obj);
@@ -33,9 +33,62 @@ PriorityGroup.prototype.save = function () {
     }
 };
 PriorityGroup.prototype.toJSON = PriorityGroup.prototype.save;
+
 //drawing
+PriorityGroup.LEFTMARGIN = 50;
+PriorityGroup.prototype.draw = function (parent) {
+    let productDesc = Draw.svgElem ("g", {
+        "class": "productDesc"
+    }, parent)
+    
+    let top = this.getTop();
+    let bottom = this.getBottom();
+    let left = -PriorityGroup.LEFTMARGIN;
+    let width = this.trakMap.rightMost + 2 * PriorityGroup.LEFTMARGIN;
+
+    let description = new PriorityGroupDesc ({
+        unclicker: this.trakMap.unclicker,
+        onChange: obj => this.modifyData(obj),
+        attrs: {
+            "class": "productDescData",
+            "transform":  "translate(" + (left + 5) + ", " + top + ")"
+        }
+    }, this.name, this.comment);
+    description.draw(productDesc);
+    
+    Draw.svgElem ("rect", {
+        "width": width,
+        "height": bottom - top,
+        "x": left,
+        "y": top,
+        "class": "priorityGroupBox"
+    }, productDesc);
+
+    Draw.menu (Draw.ALIGNLEFT, this.trakMap.unclicker, [{
+        "icon": "icons/delete.svg",
+        "action": () => {} // TODO flesh method
+    }, {
+        "icon": "icons/move-up.svg",
+        "action": () => this.moveUp() // TODO flashe method
+    }, {
+        "icon": "icons/move-down.svg",
+        "action": () => this.moveDown() // TODO, flesh method
+    }], {
+        "transform": "translate(" + left + ", " + (top - 45) + ")"
+    }, productDesc);
+};
 
 //queries
+PriorityGroup.BOTTOMMARGIN = 40;
+PriorityGroup.TOPMARGIN = 60;
+PriorityGroup.prototype.getTop = function () {
+    return this.yOffset + (this.minLevel * TrakMap.VSPACE) -
+        PriorityGroup.TOPMARGIN;
+};
+PriorityGroup.prototype.getBottom = function () {
+    return this.yOffset + (this.maxLevel * TrakMap.VSPACE) +
+        PriorityGroup.BOTTOMMARGIN;
+};
 
 // modifications
 PriorityGroup.prototype.removeProduct = function (product) {
@@ -53,7 +106,7 @@ PriorityGroup.prototype.resolveLevels = function () {
             product.direction === Product.GOINGDOWN;
     }));
 
-    if (this.products.lemngth === 0) {
+    if (this.products.length === 0) {
         this.minLevel = 0;
         this.maxLevel = 0;
         return;
@@ -84,6 +137,38 @@ PriorityGroup.prototype.modifyName = function (name) {
 };
 PriorityGroup.prototype.modifyComment = function (comment) {
     this.comment = comment;
+    this.trakMap.draw();
+};
+PriorityGroup.prototype.modifyData = function (priorityGroupDesc) {
+    this.name = priorityGroupDesc.title;
+    this.comment = priorityGroupDesc.comment;
+};
+PriorityGroup.prototype.moveUp = function () {
+    assert (() => this.trakMap.priorityGroups[this.index] === this);
+
+    if (this.index === 0) {
+        return;
+    }
+
+    assert (() => this.trakMap.priorityGroups[this.index - 1].index ===
+            this.index - 1);
+
+    Util.swapIndexedElements(this.trakMap.priorityGroups, this.index,
+                             this.index - 1);
+    this.trakMap.draw();
+};
+PriorityGroup.prototype.moveDown = function () {
+    assert (() => this.trakMap.priorityGroups[this.index] === this);
+
+    if (this.index === this.trakMap.priorityGroups.length - 1) {
+        return;
+    }
+
+    assert (() => this.trakMap.priorityGroups[this.index + 1].index ===
+            this.index + 1);
+
+    Util.swapIndexedElements(this.trakMap.priorityGroups, this.index,
+                             this.index + 1);
     this.trakMap.draw();
 };
 

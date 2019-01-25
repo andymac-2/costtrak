@@ -7,7 +7,7 @@ var ProductDesc = function (options, title, days, comment, priority) {
     // state
     /** @type {string} */ this.title;
     /** @type {string} */ this.comment;
-    /** @type {number} */ this.length;
+    /** @type {number} */ this.days;
     /** @type {number} */ this.priority;
 
     // view model
@@ -73,7 +73,7 @@ ProductDesc.prototype.onclick = function (parent) {
 
     foreign = Draw.svgElem("foreignObject", {
         "width": width,
-        "height": (height),
+        "hbeight": (height),
         "x": -(width / 2),
         "y": 5
     }, parent);

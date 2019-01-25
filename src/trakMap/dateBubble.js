@@ -46,7 +46,7 @@ DateBubble.prototype.createProduct = function () {
         "comment": "",
         "weight": 7,
         "priorityGroup": this.product ? this.product.priorityGroup.index : 0,
-        "level": 0
+        "level": this.product ? this.product.level : 0
     });
     
     if (this.product) {

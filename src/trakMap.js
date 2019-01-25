@@ -21,6 +21,7 @@ var TrakMap = function (obj, parent) {
 
     //View model (calculated)
     this.origin;
+    this.rightMost = 0;
 
     // graph elements (state)
     this.products = [];
@@ -37,7 +38,7 @@ var TrakMap = function (obj, parent) {
 };
 TrakMap.HSPACE = 30;
 TrakMap.MINPRODUCTWIDTH = 150;
-TrakMap.UNITVALUEWIDTH = 10;
+TrakMap.UNITVALUEWIDTH = 5;
 TrakMap.VSPACE = 70;
 TrakMap.PRIORITYSPACE = 130;
 TrakMap.MARGIN = 30;
@@ -83,7 +84,10 @@ TrakMap.prototype.draw = function () {
         product.drawBubble(this.bubbles);
     });
     this.dependencies.forEach (dependency => dependency.draw(this.connections));
-    // TODO draw the bounding boxes
+
+    this.priorityGroups.forEach (priorityGroup => {
+        priorityGroup.draw(this.lines);
+    });
 };
 
 TrakMap.prototype.resolveCoordinates = function () {
@@ -100,6 +104,7 @@ TrakMap.prototype.resolveCoordinates = function () {
     var heap = new MinHeap (Product.compareEnds);
     var cursor = 0;
     var lastValue = 0;
+    this.rightMost = 0;
 
     sortedProducts.forEach(product => {
         // go through heap elements < our current value.
@@ -114,6 +119,7 @@ TrakMap.prototype.resolveCoordinates = function () {
                     cursor : min.getMinEndX();
             }
 
+            this.rightMost = Math.max (this.rightMost, cursor);
             min.end.x = cursor;
             heap.deleteMin();
         }
@@ -135,6 +141,7 @@ TrakMap.prototype.resolveCoordinates = function () {
             cursor += TrakMap.HSPACE;
             cursor = (cursor > min.getMinEndX()) ? cursor : min.getMinEndX();
         }
+        this.rightMost = Math.max (this.rightMost, cursor);
         min.end.x = cursor;
     }
 
@@ -143,8 +150,7 @@ TrakMap.prototype.resolveCoordinates = function () {
 };
 
 TrakMap.prototype.resolvePriorityGroupOffsets = function () {
-    this.yOffsets = [];
-    this.yOffsets.length = this.priorityGroups.length;
+    this.priorityGroups.length;
     
     let boundary = TrakMap.MARGIN;
     this.priorityGroups.forEach (priorityGroup => {
@@ -257,6 +263,8 @@ TrakMap.prototype.removeProduct = function (prod) {
     // remove dependencies.
     prod.incoming.forEach(elem => this.removeDependency(elem));
     prod.outgoing.forEach(elem => this.removeDependency(elem));
+
+    prod.priorityGroup.removeProduct(prod);
 
     assert (() => prod.incoming.length === 0);
     assert (() => prod.outgoing.length === 0);
