@@ -207,11 +207,23 @@ TrakMap.prototype.select = function (type, obj) {
              obj !== this.selection) {
         assert (() => this.selection instanceof Product);
         assert (() => obj instanceof Product);
-        this.newDependency (obj, this.selection);
+        let dependency = this.newDependency (obj, this.selection);
 
         this.selection = null
         this.selType = TrakMap.SELNOTHING;
-        this.draw();
+        try {
+            this.draw();
+        }
+        catch (err) {
+            if (err instanceof CircularDependency) {
+                this.removeDependency (dependency)
+                this.draw();
+                alert ("Error: circular dependency");
+            }
+            else {
+                throw err;
+            }
+        }
     }
     else {
         this.selection = obj;

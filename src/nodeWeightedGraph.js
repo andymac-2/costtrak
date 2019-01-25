@@ -1,5 +1,12 @@
 'use strict'
 
+class CircularDependencyError extends Error {
+    constructor (msg) {
+        super (msg);
+        this.name = "CircularDependencyError"
+    }
+}
+
 /** @interface */
 var WeightedNode = function () {}
 
@@ -59,8 +66,7 @@ nodeWeightedGraph.topoSort = function (nodes) {
 
     // cyclic graph.
     if (active.length !== nodes.length) {
-        //TODO: custom error type
-        throw Error ("Circular Dependency");
+        throw new CircularDependencyError ("Circular dependency detected.");
     }
 
     return active;

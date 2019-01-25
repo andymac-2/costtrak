@@ -2,11 +2,12 @@
 
 /** @constructor
     @struct */
-var PriorityGroupDesc = function (options, title, comment) {
+var PriorityGroupDesc = function (options, title, comment, priority) {
     
     // state
     /** @type {string} */ this.title;
     /** @type {string} */ this.comment;
+    /** @type {number} */ this.priority;
 
     // view model
     /** @type {Unclicker} */ this.unclicker = options.unclicker;
@@ -15,7 +16,7 @@ var PriorityGroupDesc = function (options, title, comment) {
 
     /** @type {boolean} */ this.modified = false;
 
-    this.restore(title, comment);
+    this.restore(title, comment, priority);
 };
 PriorityGroupDesc.HEIGHT = 35;
 PriorityGroupDesc.TEXTBOXHEIGHT = 45;
@@ -23,11 +24,12 @@ PriorityGroupDesc.YOFFSET = 55;
 PriorityGroupDesc.XOFFSET = 0;
 PriorityGroupDesc.HEIGHTWIDTHRATIO = 7;
 PriorityGroupDesc.MAXTEXTLENGTH = 100;
-PriorityGroupDesc.prototype.restore = function (title, comment) {
+PriorityGroupDesc.prototype.restore = function (title, comment, priority) {
     this.title = title;
     this.title = this.title === "" ? "Untitled": this.title;
     this.comment = comment;
     this.comment = this.comment === "" ? "" : this.comment;
+    this.priority = priority
 };
 
 PriorityGroupDesc.prototype.draw = function (parent) {
@@ -57,6 +59,15 @@ PriorityGroupDesc.prototype.onclick = function (parent) {
     }, foreign);
     
     titleBox.addEventListener("change", () => this.modifyTitle(titleBox));
+
+    var priorityBox = Draw.htmlElem ("input", {
+        "class": "numberBox",
+        "value": this.priority,
+        "type": "number",
+        "required": ""
+    }, foreign);
+
+    priorityBox.addEventListener("change", () => this.modifyPriority(priorityBox));
 
     foreign = Draw.svgElem("foreignObject", {
         "width": width,
@@ -99,11 +110,17 @@ PriorityGroupDesc.prototype.onunclick = function (parent) {
 
 // user events
 PriorityGroupDesc.prototype.modifyTitle = function (elem) {
-    this.restore(elem.value, this.comment);
+    this.restore(elem.value, this.comment, this.priority);
     this.modified = true;
 };
 
 PriorityGroupDesc.prototype.modifyComment = function (elem) {
-    this.restore(this.title, elem.value);
+    this.restore(this.title, elem.value, this.priority);
     this.modified = true;
 };
+
+PriorityGroupDesc.prototype.modifyPriority = function (elem) {
+    this.restore(this.title, this.comment, elem.value);
+    this.modified = true;
+};
+

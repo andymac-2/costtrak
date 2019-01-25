@@ -53,7 +53,7 @@ PriorityGroup.prototype.draw = function (parent) {
             "class": "productDescData",
             "transform":  "translate(" + (left + 5) + ", " + top + ")"
         }
-    }, this.name, this.comment);
+    }, this.name, this.comment, this.priority);
     description.draw(productDesc);
     
     Draw.svgElem ("rect", {
@@ -139,9 +139,28 @@ PriorityGroup.prototype.modifyComment = function (comment) {
     this.comment = comment;
     this.trakMap.draw();
 };
+
+// functoion could cause circular dependency;
 PriorityGroup.prototype.modifyData = function (priorityGroupDesc) {
+    let oldPriority = this.priority;
+    
     this.name = priorityGroupDesc.title;
     this.comment = priorityGroupDesc.comment;
+    this.priority = priorityGroupDesc.priority;
+
+    try {
+        this.trakMap.draw();
+    }
+    catch (err) {
+        if (err instanceof CircularDependencyError) {
+            this.priority = oldPriority;
+            this.trakMap.draw();
+            alert ("Error: Circular dependency");
+        }
+        else {
+            throw err;
+        }
+    }
 };
 PriorityGroup.prototype.moveUp = function () {
     assert (() => this.trakMap.priorityGroups[this.index] === this);

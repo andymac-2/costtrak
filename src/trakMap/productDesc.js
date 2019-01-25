@@ -73,7 +73,7 @@ ProductDesc.prototype.onclick = function (parent) {
 
     foreign = Draw.svgElem("foreignObject", {
         "width": width,
-        "hbeight": (height),
+        "height": (height),
         "x": -(width / 2),
         "y": 5
     }, parent);
@@ -114,7 +114,7 @@ ProductDesc.prototype.onunclick = function (parent) {
         this.title + daystring, ProductDesc.MAXTEXTLENGTH);
 
     var comment = Draw.svgElem ("text", {
-        "class": "msComment",
+        "class": "productComment",
         "text-anchor": "middle",
         "transform": "translate(0, 15)"
     }, parent);
