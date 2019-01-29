@@ -17,6 +17,12 @@ var PriorityGroup  = function (trakMap, index, obj) {
     this.restore (obj);
 };
 
+PriorityGroup.DEFAULTPRIORITYGROUP = {
+    "name": "Untitled",
+    "comment": "",
+    "priority": 0
+};
+
 // serialisation
 PriorityGroup.prototype.restore = function (obj) {
     assert (() => obj.priority >= 0);
@@ -73,6 +79,9 @@ PriorityGroup.prototype.draw = function (parent) {
     }, {
         "icon": "icons/move-down.svg",
         "action": () => this.moveDown()
+    }, {
+        "icon": "icons/plus.svg",
+        "action": () => alert ("unimplemented")
     }], {
         "transform": "translate(" + left + ", " + (top - 45) + ")"
     }, productDesc);
@@ -93,8 +102,7 @@ PriorityGroup.prototype.getBottom = function () {
 // modifications
 PriorityGroup.prototype.removeProduct = function (product) {
     assert (() => product.priorityGroup === this);
-    this.products = this.products.filter(elem => elem !== product);
-    // Util.removeFromArray(this.products, product);
+    Util.removeFromArray(this.products, product);
 };
 
 PriorityGroup.prototype.addProduct = function (product) {
@@ -141,7 +149,7 @@ PriorityGroup.prototype.modifyComment = function (comment) {
     this.trakMap.draw();
 };
 
-// functoion could cause circular dependency;
+// function could cause circular dependency;
 PriorityGroup.prototype.modifyData = function (priorityGroupDesc) {
     let oldPriority = this.priority;
     

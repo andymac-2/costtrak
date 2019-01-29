@@ -3,22 +3,42 @@ body {
     font-size: small;
 }
 
-.foxedPaneTableVScrollDiv {
-    position: relative;
+/* menu bar */
+.menubar {
+    padding: 0px;
+    
+    display: flex;
+    flex-wrap: wrap;
+}
+.menuBarSegment {
+    border: 1px solid #888;
+    background-color: #f4f4f4;
+    border-radius: 3px;
+    margin: 2px;
+    padding: 2px;
+    
+    height: 55px;
+    overflow: hidden;
+    display: inline-block;
+}
+.menuBarHeader {
+    color: #444;
+    font-size: small;    
+}
+.menuBarContent {
+    text-align: center;
+    color: #444;
+    font-size: small;
+}
+.menuBarContent span {
+    display: inline-block;
+    height: 45px;
+    overflow: hidden;
 }
 
-.fixedPaneTableHScrollDiv {
-    overflow-x: scroll;
-}
 
-.fixedPaneTableTable {
-    table-layout: fixed;
-}
 
-.fixedPaneRowHeadingCell {
-    position: absolute;
-}
-
+/* date bubbles */
 .dateBubble ellipse{
     fill: white;
     stroke: black;
@@ -29,9 +49,6 @@ body {
 }
 
 /* priority level pallette */
-
-/* menus */
-
 /* Menus */
 .menuEntry circle{
     fill: hsl(180, 30%, 90%);

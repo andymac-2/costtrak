@@ -45,13 +45,6 @@ Product.compareEnds = function (a, b) {
     return a.getMinEndX() - b.getMinEndX();
 };
 
-Product.DEFAULT = {
-    name: "Untitled",
-    weight: 7,
-    priorityGroup: 0,
-    level: 0
-};
-
 Product.prototype.restore = function (obj) {
     this.name = obj.name;
     this.comment = obj.comment || "";
@@ -171,21 +164,19 @@ Product.prototype.resolveYCoord = function () {
 };
 Product.prototype.removeDependency = function (dep) {
     assert (() => dep instanceof Dependency);
-    // we use this instead of Util.removeFromArray because this
-    // function is called from this.incoming.forEach. If we use
-    // Util.removeFromArray, we modify the array in place, and it
-    // becomes screwy. This way, we create a new array, so we don't
-    // interfere with the forEach call
-    this.incoming = this.incoming.filter(elem => elem !==  dep);
+    Util.removeFromArray(this.incoming, dep);
 };
 Product.prototype.removeDependent = function (dep) {
     assert (() => dep instanceof Dependency);
-    // see comment in removeDependency
-    this.outgoing = this.outgoing.filter(elem => elem !== dep);
+    Util.removeFromArray (this.outgoing, dep);
 };
 
 Product.prototype.modifyName = function (e, input) {
     this.name = input.text;
+};
+Product.prototype.setDirection = function (dir) {
+    assert (() => dir === Product.GOINGUP || dir === Product.GOINGDOWN);
+    this.direction = dir;
 };
 
 
@@ -200,18 +191,28 @@ Product.prototype.modifyData = function (productDesc) {
 };
 
 Product.prototype.deleteThis = function () {
+    this.incoming.slice().forEach(elem => elem.deleteThis());
+    this.outgoing.slice().forEach(elem => elem.deleteThis());
+    
+    this.priorityGroup.removeProduct(this);
+
+    assert (() => this.incoming.length === 0);
+    assert (() => this.outgoing.length === 0);
+    
     this.trakMap.removeProduct(this);
     this.trakMap.draw();
 };
 
 Product.prototype.moveUp = function () {
     this.level += Product.GOINGUP;
-    this.direction = Product.GOINGUP;
+    this.trakMap.setAllDirections(Product.GOINGDOWN);
+    this.setDirection (Product.GOINGUP);
     this.trakMap.draw();
 };
 Product.prototype.moveDown = function () {
     this.level += Product.GOINGDOWN;
-    this.direction = Product.GOINGDOWN;
+    this.trakMap.setAllDirections(Product.GOINGUP);
+    this.setDirection (Product.GOINGDOWN);
     this.trakMap.draw();
 };
 

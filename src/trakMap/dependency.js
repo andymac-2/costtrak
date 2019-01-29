@@ -4,7 +4,7 @@
 var Dependency = function (trakMap, index, obj) {
     // state
     this.dependency;
-    this.dependant;
+    this.dependent;
 
     // view model
     this.trakMap = trakMap;
@@ -25,7 +25,7 @@ Dependency.prototype.draw = function (parent) {
         "class": "dependency"
     }, parent);
 
-    connections.addEventListener("dblclick", () => this.deleteDraw());
+    connections.addEventListener("dblclick", () => this.deleteThis());
 
     if (this.dependency.getEndValue() === this.dependent.getStartValue() &&
         this.dependency.getPriority() <= this.dependent.getPriority()){
@@ -42,11 +42,6 @@ Dependency.prototype.draw = function (parent) {
     return connections;
 };
 
-Dependency.prototype.deleteDraw  = function () {
-    this.trakMap.removeDependency(this);
-    this.trakMap.draw();
-};
-
 // Serialisation methods
 Dependency.prototype.restore = function (obj) {
     this.dependency = this.trakMap.products[obj.dependency];
@@ -58,12 +53,20 @@ Dependency.prototype.restore = function (obj) {
 Dependency.prototype.save = function () {
     assert(() => this.trakMap.products[this.dependency.index] ===
            this.dependency);
-    assert(() => this.trakMap.products[this.dependant.index] ===
-           this.dependant);
+    assert(() => this.trakMap.products[this.dependent.index] ===
+           this.dependent);
     
     return {
         "dependency": this.dependency.index,
-        "dependant": this.dependant.index
+        "dependent": this.dependent.index
     };
 };
 Dependency.prototype.toJSON = Dependency.prototype.save;
+
+//user events
+Dependency.prototype.deleteThis  = function () {
+    this.dependency.removeDependent(this);
+    this.dependent.removeDependency(this);
+    this.trakMap.removeDependency(this);
+    this.trakMap.draw();
+};

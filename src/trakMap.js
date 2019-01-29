@@ -43,8 +43,32 @@ TrakMap.VSPACE = 70;
 TrakMap.PRIORITYSPACE = 130;
 TrakMap.MARGIN = 30;
 
-// reactive functions
-// obj: {prodicts, dependencies, start, prioritiesList};
+TrakMap.NEWFILE = {
+    "products" : [
+        {
+            "name": Product.DEFAULTNAME,
+            "comment": Product.DEFAULTCOMMENT,
+            "weight": Product.DEFAULTWEIGHT,
+            "priorityGroup": 0
+            "level" : 0
+        },
+    ],
+    "dependencies": [],
+    "start": 0,
+    "priorityGroups": [
+        PriorityGroup.DEFAULTPRIORITYGROUP
+    ]
+}
+
+TrakMap.prototype.save = function () {
+    return {
+        start: this.start,
+        priorityGroups: this.priorityGroups,
+        products: this.products.map(product => product.save()),
+        dependencies: this.dependencies.map(dependency => dependency.save())
+    };
+};
+
 TrakMap.prototype.restore = function (obj) {
     this.start = obj.start;
 
@@ -169,15 +193,7 @@ TrakMap.prototype.resolveProductYValues = function () {
     this.products.forEach (product => product.resolveYCoord());
 };
 
-TrakMap.prototype.save = function () {
-    return {
-        start: this.start,
-        prioritiesList: this.prioritiesList,
-        products: this.products.map(product => product.save()),
-        dependencies: this.dependencies.map(dependency => dependency.save())
-    };
-};
-
+// user events
 // selection state in order of high to low priority.
 TrakMap.SELDEPENDENCY = 0;
 TrakMap.SELDEPENDENT = 1;
@@ -231,6 +247,10 @@ TrakMap.prototype.select = function (type, obj) {
     }
 };
 
+
+// modifictions:
+
+
 // adds a product with the serialisation of obj. Call the draw method
 // to update the screen
 TrakMap.prototype.addProduct = function (obj) {
@@ -259,31 +279,28 @@ TrakMap.prototype.newDependency = function (dependency, dependent) {
 
 // removes a dependency. Call the draw method to update the screen
 TrakMap.prototype.removeDependency = function (dep) {
-    assert (() => dep instanceof Dependency);
-
-    dep.dependency.removeDependent(dep);
-    dep.dependent.removeDependency(dep);
-
     Util.removeFromIndexedArray(this.dependencies, dep);
 };
 
 // removes a product. Call the draw method to update the screen
 TrakMap.prototype.removeProduct = function (prod) {
-    assert (() => (prod instanceof Product));
-    assert (() => prod === this.products[prod.index]);
-
-    // remove dependencies.
-    prod.incoming.forEach(elem => this.removeDependency(elem));
-    prod.outgoing.forEach(elem => this.removeDependency(elem));
-
-    prod.priorityGroup.removeProduct(prod);
-
-    assert (() => prod.incoming.length === 0);
-    assert (() => prod.outgoing.length === 0);
-    
     Util.removeFromIndexedArray (this.products, prod);
 };
 
 TrakMap.prototype.removePriorityGroup = function (priorityGroup) {
     Util.removeFromIndexedArray (this.priorityGroups, priorityGroup);
+};
+
+TrakMap.prototype.setAllDirections = function (dir) {
+    this.products.forEach (prod => prod.setDirection(dir));
+};
+
+
+//user events
+TrakMap.prototype.newPriorityGroup = function () {
+    let priorityGroup = new PriorityGroup (
+        this, this.priorityGroups.length, PriorityGroup.DEFAULTPRIORITYGROUP);
+    this.priorityGroups.push(priorityGroup);
+    this.draw();
+    return priorityGroup;
 };
