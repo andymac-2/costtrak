@@ -77,7 +77,7 @@ PriorityGroupDesc.prototype.onclick = function (parent) {
     }, parent);
 
     var commentBox = Draw.htmlElem ("input", {
-        "class": "svgCommentBox",
+        "class": "svgCommentBox comment",
         "value": this.comment,
         "type": "text",
         "placeholder": "Priority Group Comment"
@@ -101,7 +101,7 @@ PriorityGroupDesc.prototype.onunclick = function (parent) {
         this.title, PriorityGroupDesc.MAXTEXTLENGTH);
 
     var comment = Draw.svgElem ("text", {
-        "class": "priorityGroupComment",
+        "class": "priorityGroupComment comment",
         "text-anchor": "start",
         "transform": "translate(0, 15)"
     }, parent);

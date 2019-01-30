@@ -41,7 +41,13 @@ nodeWeightedGraph.topoSort = function (nodes) {
     // find all nodes which have no dependencies, also set all nodes
     // visited to "false"
     nodes.forEach(node => node.visited = false)
-    let active = nodes.filter(node => this.fulfilledDependencies(node));
+    let active = nodes
+        .filter(node => this.fulfilledDependencies(node))
+        .map(node => {
+            node.visited = true
+            return node;
+        });
+    
 
     // for each element in the active list, check all of it's
     // dependants. If any of the dependants dependencies have all been

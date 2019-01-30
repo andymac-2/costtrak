@@ -32,6 +32,10 @@ var Product = function (graph, index, obj) {
 Product.GOINGUP = -1;
 Product.GOINGDOWN = 1;
 
+Product.DEFAULTWEIGHT = 7;
+Product.DEFAULTNAME = "New Product";
+Product.DEFAULTCOMMENT = "";
+
 // static functions
 Product.compare = function (a, b) {
     return a.value - b.value;
@@ -86,7 +90,7 @@ Product.prototype.drawLine = function (parent) {
         "y2": this.end.y
     }, line);
 
-    var lineCentreX = (this.start.x + this.end.x) / 2
+    var lineCentreX = (this.start.x + this.end.x - TrakMap.HSPACE) / 2
 
     var description = new ProductDesc ({
         unclicker: this.trakMap.unclicker,
@@ -94,8 +98,9 @@ Product.prototype.drawLine = function (parent) {
         attrs: {
             "class": "productData",
             "transform": "translate(" + lineCentreX + ", " + this.start.y + ")"
-        }
-    }, this.name, this.weight, this.comment, this.priority);
+        },
+        product: this
+    }, this.name, this.weight, this.comment, this.priorityGroup);
     description.draw(line);
     
     Draw.menu (Draw.ALIGNCENTER, this.trakMap.unclicker, [{
@@ -179,6 +184,15 @@ Product.prototype.setDirection = function (dir) {
     this.direction = dir;
 };
 
+Product.prototype.modifyPriorityGroup = function (pg) {
+    if (pg === this.priorityGroup) {
+        return;
+    }
+    
+    this.priorityGroup.removeProduct(this);
+    this.priorityGroup = pg;
+    this.priorityGroup.addProduct(this);
+};
 
 // user functions.
 // accepts a ProductDesc Object
@@ -187,7 +201,23 @@ Product.prototype.modifyData = function (productDesc) {
     this.weight = Math.max (Math.floor(productDesc.days), 1);
     this.comment = productDesc.comment;
 
-    this.trakMap.draw();
+    let oldPG = this.priorityGroup
+    
+    this.modifyPriorityGroup (productDesc.priorityGroup);
+
+    try {
+        this.trakMap.draw();
+    }
+    catch (err) {
+        if (err instanceof CircularDependency) {
+            this.modifyPriorityGroup (oldPG)
+            this.trakMap.draw();
+            alert ("Error: Circular dependency");
+        }
+        else {
+            throw err;
+        }
+    }
 };
 
 Product.prototype.deleteThis = function () {

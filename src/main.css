@@ -3,10 +3,21 @@ body {
     font-size: small;
 }
 
+/* generic */
+.comment {
+    stroke: none;
+    fill: #a0a0a0;
+    font-style: italic;
+}
+.flex-container {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0px;  
+}
+
 /* menu bar */
 .menubar {
-    padding: 0px;
-    
+    padding: 0px;   
     display: flex;
     flex-wrap: wrap;
 }
@@ -48,7 +59,26 @@ body {
     font-size: xx-small;
 }
 
-/* priority level pallette */
+/* Products */
+.productName {
+    flex-grow: 4;
+    flex-shrink: 4;
+    width: 1px;
+}
+.productWeight {
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: 1px;
+}
+.productComment {
+    flex-grow: 3;
+    width: 1px;
+}
+.productPriorityGroup {
+    flex-grop: 2;
+    width: 1px;
+}
+
 /* Menus */
 .menuEntry circle{
     fill: hsl(180, 30%, 90%);

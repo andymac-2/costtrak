@@ -37,8 +37,8 @@ var TrakMap = function (obj, parent) {
     this.restore(obj);
 };
 TrakMap.HSPACE = 30;
-TrakMap.MINPRODUCTWIDTH = 150;
-TrakMap.UNITVALUEWIDTH = 5;
+TrakMap.MINPRODUCTWIDTH = 230;
+TrakMap.UNITVALUEWIDTH = 3;
 TrakMap.VSPACE = 70;
 TrakMap.PRIORITYSPACE = 130;
 TrakMap.MARGIN = 30;
@@ -49,7 +49,7 @@ TrakMap.NEWFILE = {
             "name": Product.DEFAULTNAME,
             "comment": Product.DEFAULTCOMMENT,
             "weight": Product.DEFAULTWEIGHT,
-            "priorityGroup": 0
+            "priorityGroup": 0,
             "level" : 0
         },
     ],
@@ -191,6 +191,16 @@ TrakMap.prototype.resolvePriorityLevels = function () {
 };
 TrakMap.prototype.resolveProductYValues = function () {
     this.products.forEach (product => product.resolveYCoord());
+};
+
+//onchange takes one argument: the selected priority group
+TrakMap.prototype.drawPriorityGroupSelector =
+    function (onchange, attrs, parent)
+{
+    let entries = this.priorityGroups.map(priorityGroup => priorityGroup.name);
+    Draw.dropDown ((evt) => {
+        onchange(this.priorityGroups[evt.currentTarget.value])
+    }, entries, attrs, parent);
 };
 
 // user events

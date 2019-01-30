@@ -110,3 +110,22 @@ Draw.dropDownSegment = function (name, onchange, entries, attrs, parent) {
     
     return elem;
 };
+
+Draw.dropDown = function (onchange, entries, attrs, parent) {  
+    let select = Draw.elem ("select", attrs, parent);
+    select.addEventListener ("change", onchange);
+
+    Draw.elem ("option", {
+        "selected": "",
+        "disabled": "",
+        "hidden": ""
+    }, select).textContent = "Please choose:";
+    
+    entries.forEach((entry, ix) => {
+        Draw.elem ("option", {
+            "value": ix,
+        }, select).textContent = entry;
+    })
+    
+    return select;
+};
