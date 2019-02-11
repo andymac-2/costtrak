@@ -46,8 +46,7 @@ nodeWeightedGraph.topoSort = function (nodes) {
         .map(node => {
             node.visited = true
             return node;
-        });
-    
+        });   
 
     // for each element in the active list, check all of it's
     // dependants. If any of the dependants dependencies have all been
@@ -91,12 +90,29 @@ nodeWeightedGraph.greedySort = function (nodes) {
     var topoSorted = this.topoSort (nodes);
 
     topoSorted.forEach(node => {
-        node.value = 0;
+        node.value = Number.MIN_SAFE_INTEGER;
 
         node.incoming.forEach(dep => {
             let dependency = dep.dependency;
             if (dependency.getPriority() <= node.getPriority()) {                                       
                 node.value = Math.max(node.value, dependency.getEndValue());
+            }
+        });
+    });
+
+    return topoSorted.sort(Product.compare);
+};
+nodeWeightedGraph.lazySort = function (nodes) {
+    var topoSorted = this.topoSort (nodes);
+
+    topoSorted.reverse().forEach(node => {
+        node.value = Number.MAX_SAFE_INTEGER;
+
+        node.outgoing.forEach(dep => {
+            let dependent = dep.dependent;
+            if (dependent.getPriority() <= node.getPriority()) {                                       
+                node.value = Math.min(
+                    node.value, dependent.getStartValue() - node.weight);
             }
         });
     });

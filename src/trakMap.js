@@ -25,6 +25,7 @@ var TrakMap = function (obj, parent) {
 
     // graph elements (state)
     this.products = [];
+    this.milestones = [];
     this.dependencies = [];
     this.priorityGroups = [];
     this.start;
@@ -45,15 +46,14 @@ TrakMap.MARGIN = 30;
 
 TrakMap.NEWFILE = {
     "products" : [
-        {
-            "name": Product.DEFAULTNAME,
-            "comment": Product.DEFAULTCOMMENT,
-            "weight": Product.DEFAULTWEIGHT,
-            "priorityGroup": 0,
-            "level" : 0
-        },
+        Product.DEFAULTPRODUCT
     ],
-    "dependencies": [],
+    "milestones" : [
+        Milestone.DEFAULTMILESTONE
+    ],
+    "dependencies": [
+        Dependency.DEFAULTDEPENDENCY
+    ],
     "start": 0,
     "priorityGroups": [
         PriorityGroup.DEFAULTPRIORITYGROUP
@@ -62,10 +62,11 @@ TrakMap.NEWFILE = {
 
 TrakMap.prototype.save = function () {
     return {
-        start: this.start,
-        priorityGroups: this.priorityGroups,
-        products: this.products.map(product => product.save()),
-        dependencies: this.dependencies.map(dependency => dependency.save())
+        "start": this.start,
+        "priorityGroups": this.priorityGroups,
+        "products": this.products.map(product => product.save()),
+        "milestones": this.milestones.map(milestone => milestone.save()),
+        "dependencies": this.dependencies.map(dependency => dependency.save())
     };
 };
 
@@ -76,6 +77,11 @@ TrakMap.prototype.restore = function (obj) {
     obj.priorityGroups.forEach ((priorityGroup, i) => {
         this.priorityGroups.push(new PriorityGroup (this, i, priorityGroup));
     });
+
+    this.milestones = [];
+    obj.milestones.forEach((milestone, i) => {
+        this.milestones.push(new Milestone (this, i, milestone));
+    })
 
     this.products = [];
     obj.products.forEach((product, i) => {
@@ -118,11 +124,11 @@ TrakMap.prototype.resolveCoordinates = function () {
     //TODO: rewrite for priorityGroups.
     
     // Step 1: resolve y coordinates
-    let sortedProducts = nodeWeightedGraph.greedySort(this.products);
+    nodeWeightedGraph.greedySort(this.products);
 
     this.resolvePriorityLevels ();
     this.resolvePriorityGroupOffsets();
-    this.resolveProductYValues ();
+    this.resolveYValues ();
 
     // Step 2: resolve x coordinates
     var heap = new MinHeap (Product.compareEnds);
@@ -130,21 +136,24 @@ TrakMap.prototype.resolveCoordinates = function () {
     var lastValue = 0;
     this.rightMost = 0;
 
+    let sortedProducts = this.products
+        .concat(this.milestones)
+        .sort(Product.compare);
+
     sortedProducts.forEach(product => {
-        // go through heap elements < our current value.
+        // go through heap elements <= our current value, heap
+        // elements should be traversed with priority.
         while (!heap.empty() &&
                (heap.getMin().getEndValue() <= product.getStartValue()))
         {
             var min = heap.getMin();
             if (lastValue !== min.getEndValue()) {
                 lastValue = min.getEndValue();
-                cursor += TrakMap.HSPACE;
-                cursor = (cursor > min.getMinEndX()) ?
-                    cursor : min.getMinEndX();
+                cursor = Math.max(cursor + TrakMap.HSPACE, min.getMinEndX());
             }
 
             this.rightMost = Math.max (this.rightMost, cursor);
-            min.end.x = cursor;
+            min.setEndX(cursor);
             heap.deleteMin();
         }
 
@@ -154,7 +163,7 @@ TrakMap.prototype.resolveCoordinates = function () {
             cursor += TrakMap.HSPACE;
         }
 
-        product.start.x = cursor + TrakMap.HSPACE;
+        product.setStartX(cursor);
         heap.add(product);
     });
 
@@ -162,11 +171,10 @@ TrakMap.prototype.resolveCoordinates = function () {
     while (min = heap.deleteMin()) {
         if (lastValue !== min.getEndValue()) {
             lastValue = min.getEndValue();
-            cursor += TrakMap.HSPACE;
-            cursor = (cursor > min.getMinEndX()) ? cursor : min.getMinEndX();
+            cursor = Math.max(cursor + TrakMap.HSPACE, min.getMinEndX());
         }
         this.rightMost = Math.max (this.rightMost, cursor);
-        min.end.x = cursor;
+        min.setEndX(cursor);
     }
 
     // TODO: redefine default origin
@@ -189,8 +197,9 @@ TrakMap.prototype.resolvePriorityLevels = function () {
         priorityGroup.resolveLevels();
     });
 };
-TrakMap.prototype.resolveProductYValues = function () {
+TrakMap.prototype.resolveYValues = function () {
     this.products.forEach (product => product.resolveYCoord());
+    this.milestones.forEach (milestone => milestone.resolveYCoord());
 };
 
 //onchange takes one argument: the selected priority group
@@ -241,7 +250,7 @@ TrakMap.prototype.select = function (type, obj) {
             this.draw();
         }
         catch (err) {
-            if (err instanceof CircularDependency) {
+            if (err instanceof CircularDependencyError) {
                 this.removeDependency (dependency)
                 this.draw();
                 alert ("Error: Circular dependency");

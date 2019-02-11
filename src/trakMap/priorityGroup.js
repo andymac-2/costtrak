@@ -10,6 +10,7 @@ var PriorityGroup  = function (trakMap, index, obj) {
 
     // calculated
     this.products = [];
+    this.milestones = [];
     this.minLevel = Number.MAX_SAFE_INTEGER;
     this.maxLevel = Number.MIN_SAFE_INTEGER;
     this.yOffset = 0;
@@ -109,10 +110,22 @@ PriorityGroup.prototype.addProduct = function (product) {
     assert (() => product.priorityGroup === this);
     this.products.push(product);
 };
+PriorityGroup.prototype.addMilestone = function (milestone) {
+    assert (() => milestone.priorityGroup === this);
+    this.milestones.push (milestone);
+};
+PriorityGroup.prototype.removeMilestone = function (milexstone) {
+    assert (() => milestone.priorityGroup === this);
+    Util.removeFromArray (this.milestones, milestone);
+};
 PriorityGroup.prototype.resolveLevels = function () {
     assert (() => this.products.every(product => {
         return product.direction === Product.GOINGUP ||
             product.direction === Product.GOINGDOWN;
+    }));
+    assert (() => this.milestones.every(milestone => {
+        return milestone.direction === Product.GOINGUP ||
+            milestone.direction === Product.GOINGDOWN;
     }));
 
     if (this.products.length === 0) {
@@ -124,9 +137,11 @@ PriorityGroup.prototype.resolveLevels = function () {
     let levels = [];
     this.minLevel = Number.MAX_SAFE_INTEGER;
     this.maxLevel = Number.MIN_SAFE_INTEGER;
+
+    milestonesProducts = this.products.concat(this.milestones);
     
-    this.products.sort(Product.compare).forEach (product => {        
-        while (levels[product.level] && levels[product.level] > product.getStartValue()) {
+    this.milestonesProducts.sort(Product.compare).forEach (product => {        
+        while (PriorityGroup.productOverlaps(levels, product)) {
             product.level += product.direction;
         }
         levels[product.level] = product.getEndValue();
@@ -134,6 +149,18 @@ PriorityGroup.prototype.resolveLevels = function () {
         this.maxLevel = Math.max (product.level, this.maxLevel);
     });
 };
+
+PriorityGroup.productOverlaps = function (levels, product) {
+    if (levels[product.level] === undefined) {
+        return false;
+    }
+    if (product.getWidth() > 0) {
+        return product.getStartValue() < levels[product.level];
+    }
+    if (product.getWidth() === 0) {
+        return product.getStartValue() <= levels[product.level];
+    }
+}
 
 //user events
 PriorityGroup.prototype.modifyPriority = function (priority) {
@@ -172,9 +199,13 @@ PriorityGroup.prototype.modifyData = function (priorityGroupDesc) {
     }
 };
 PriorityGroup.prototype.deleteThis = function () {
-    this.products.forEach (prod => this.trakMap.removeProduct(prod));
-    this.trakMap.removePriorityGroup(this);
+    this.products.slice().forEach (prod => prod.deleteThis());
+    this.milestones.slice().forEach (milestone => milestone.deleteThis());
 
+    assert (() => this.product.length === 0);
+    assert (() => this.milestone.length === 0);
+    
+    this.trakMap.removePriorityGroup(this);
     this.trakMap.draw();
 };
 PriorityGroup.prototype.moveUp = function () {

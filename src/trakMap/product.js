@@ -29,12 +29,21 @@ var Product = function (graph, index, obj) {
 
     this.restore(obj);
 };
+
 Product.GOINGUP = -1;
 Product.GOINGDOWN = 1;
 
 Product.DEFAULTWEIGHT = 7;
 Product.DEFAULTNAME = "New Product";
 Product.DEFAULTCOMMENT = "";
+
+Product.DEFAULTPRODUCT = {
+    "name": Product.DEFAULTNAME,
+    "comment": Product.DEFAULTCOMMENT,
+    "weight": Product.DEFAULTWEIGHT,
+    "priorityGroup": 0,
+    "level" : 0
+};
 
 // static functions
 Product.compare = function (a, b) {
@@ -167,6 +176,13 @@ Product.prototype.resolveYCoord = function () {
     let value = this.level * TrakMap.VSPACE;
     this.start.y = this.end.y = value + offset;
 };
+Product.prototype.setEndX = function (x) {
+    this.end.x = x;
+};
+Product.prototype.setStartX = function (x) {
+    this.start.x = x + TrakMap.HSPACE;
+};
+// remove dependency and remove dependent used also by Milestone class.
 Product.prototype.removeDependency = function (dep) {
     assert (() => dep instanceof Dependency);
     Util.removeFromArray(this.incoming, dep);
@@ -209,7 +225,7 @@ Product.prototype.modifyData = function (productDesc) {
         this.trakMap.draw();
     }
     catch (err) {
-        if (err instanceof CircularDependency) {
+        if (err instanceof CircularDependencyError) {
             this.modifyPriorityGroup (oldPG)
             this.trakMap.draw();
             alert ("Error: Circular dependency");
@@ -250,7 +266,6 @@ Product.prototype.moveDown = function () {
 Product.prototype.checkInvariants = function () {
     assert (() => this.weight > 0);
     assert (() => this.getPriority() >= 0);
-    assert (() => this.level >= 0);
 
     var maxValue = 0;
     this.incoming.forEach(dep => {
@@ -266,5 +281,5 @@ Product.prototype.checkInvariants = function () {
         assert (() => dep.dependency === this);
     });
 
-    asssert (() => this.trakMap.products[this.index] === this);    
+    assert (() => this.trakMap.products[this.index] === this);
 };

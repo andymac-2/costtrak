@@ -1,5 +1,12 @@
 'use strict'
 
+class AssertionError extends Error {
+    constructor (msg) {
+        super ("Assertion failed : " + msg);
+        this.name = "AssertionError"
+    }
+}
+
 /** @define {boolean} */
 var NDEBUG = false;
 
@@ -8,16 +15,8 @@ var runTAssert = function (test) {
     if (test()) {
         return;
     }
-    console.assert (false, test.toString());
-    console.trace();
-    throw Error (test.toString());
+    throw new AssertionError (test.toString());
 };
 
 // debug check
-var assert = NDEBUG === true ? () => {} : test => {
-    if (test()) {
-        return;
-    }
-    console.assert (false, test.toString());
-    console.trace();
-};
+var assert = NDEBUG === true ? () => {} : runTAssert;

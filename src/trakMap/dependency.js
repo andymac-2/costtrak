@@ -3,7 +3,9 @@
 
 var Dependency = function (trakMap, index, obj) {
     // state
+    this.dependencyType;
     this.dependency;
+    this.dependentType;
     this.dependent;
 
     // view model
@@ -18,6 +20,15 @@ var Dependency = function (trakMap, index, obj) {
     this.elem;
 
     this.restore (obj);
+}
+Dependency.MILESTONE = 0;
+Dependency.PRODUCT = 1;
+
+Dependency.DEFAULTDEPENDENCY = {
+    "dependencyType": Dependency.MILESTONE,
+    "dependency": 0,
+    "dependentType": Dependency.PRODUCT,
+    "dependent": 0
 }
 
 Dependency.prototype.draw = function (parent) {
@@ -44,20 +55,36 @@ Dependency.prototype.draw = function (parent) {
 
 // Serialisation methods
 Dependency.prototype.restore = function (obj) {
-    this.dependency = this.trakMap.products[obj.dependency];
+    if (obj.dependencyType === Dependency.PRODUCT) {
+        this.dependency = this.trakMap.products[obj.dependency];
+    }
+    else if (obj.dependencyType === Dependency.MILESTONE) {
+        this.dependency = this.trakMap.milestones[obj.dependency];
+    }
+    this.dependencyType = obj.dependencyType;
     this.dependency.outgoing.push(this);
 
-    this.dependent = this.trakMap.products[obj.dependent];
+    if (obj.dependentType === Dependency.PRODUCT) {
+        this.dependent = this.trakMap.products[obj.dependent];
+    }
+    else if (obj.dependentType === Dependency.MILESTONE) {
+        this.dependent = this.trakMap.milestones[obj.dependent];
+    }
+    this.dependentType = obj.dependentType;
     this.dependent.incoming.push(this);
 };
 Dependency.prototype.save = function () {
-    assert(() => this.trakMap.products[this.dependency.index] ===
-           this.dependency);
-    assert(() => this.trakMap.products[this.dependent.index] ===
-           this.dependent);
+    assert(() => this.dependencyType === Dependency.PRODUCT ?
+           this.trakMap.products[this.dependency.index] === this.dependency :
+           this.trakMap.milestones[this.dependency.index] === this.dependency);
+    assert(() => this.denpendentType === Dependency.PRODUCT ?
+           this.trakMap.products[this.dependent.index] === this.dependent :
+           this.trakMap.milestones[this.dependent.index === this.dependent]);
     
     return {
+        "dependencyType": this.dependencyType,
         "dependency": this.dependency.index,
+        "dependentType": this.dependentType,
         "dependent": this.dependent.index
     };
 };

@@ -24,7 +24,7 @@ DateBubble.prototype.draw = function (parent) {
         "cx": "0", "cy": "0", "rx": "15", "ry": "15"
     }, dateBubble);
     
-    var foreign = Draw.svgElem ("text", {
+    Draw.svgElem ("text", {
         "x": 0, "y": 4,
         "text-anchor": "middle"
     }, dateBubble).textContent = text;
@@ -42,9 +42,9 @@ DateBubble.prototype.draw = function (parent) {
 // user events
 DateBubble.prototype.createProduct = function () {
     var product = this.trakMap.addProduct({
-        "name": "Untitled",
-        "comment": "",
-        "weight": 7,
+        "name": Product.DEFAULTNAME,
+        "comment": Product.DEFAULTCOMMENT,
+        "weight": Product.DEFAULTWEIGHT,
         "priorityGroup": this.product ? this.product.priorityGroup.index : 0,
         "level": this.product ? this.product.level : 0
     });
