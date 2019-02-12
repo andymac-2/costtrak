@@ -19,7 +19,6 @@ var Milestone = function (trakMap, index, obj) {
 
     this.restore (obj);
 };
-
 Milestone.DEFAULTMILESTONE = {
     "priorityGroup": 0,
     "value": 0,
@@ -45,7 +44,7 @@ Milestone.prototype.save = function () {
 Milestone.prototype.toJSON = Milestone.prototype.save;
 
 //drawing
-Milestone.DIAMONDSIZE = 15;
+Milestone.DIAMONDSIZE = 18;
 Milestone.prototype.draw = function (parent) {
     let milestone = Draw.svgElem ("g", {
         "class": "milestone",
@@ -53,11 +52,10 @@ Milestone.prototype.draw = function (parent) {
     }, parent);
 
     Draw.svgElem("path", {
-        "class": this.resolveStatusClass (),
-        "d" : "M -" +  MsAtReport.DIAMONDSIZE + " 0" +
-            "L 0 " +  MsAtReport.DIAMONDSIZE +
-            "L " + MsAtReport.DIAMONDSIZE + " 0" +
-            "L 0 -" + MsAtReport.DIAMONDSIZE + " Z"
+        "d" : "M -" +  Milestone.DIAMONDSIZE + " 0" +
+            "L 0 " +  Milestone.DIAMONDSIZE +
+            "L " + Milestone.DIAMONDSIZE + " 0" +
+            "L 0 -" + Milestone.DIAMONDSIZE + " Z"
     }, milestone);
 
     Draw.svgElem ("text", {
@@ -65,6 +63,17 @@ Milestone.prototype.draw = function (parent) {
         "y": 4,
         "text-anchor": "middle"
     }, milestone).textContent = this.getEndValue().toString();
+
+    // TODO make this work for lazy mode
+    Draw.menu (Draw.ALIGNCENTER, this.trakMap.unclicker, [{
+        "icon": "icons/arrow-right.svg",
+        "action": () => this.createProductForward()
+    }, {
+        "icon": "icons/delete.svg",
+        "action": () => this.trakMap.deleteMilestone(this),
+    }], {
+        "transform": "translate(0, -40)"
+    }, milestone);
 };
 
 // queries. A lot of these are similar to the Product class.
@@ -73,6 +82,12 @@ Milestone.prototype.getEndValue = function () {
 };
 Milestone.prototype.getStartValue = function () {
     return this.value;
+};
+Milestone.prototype.getStart = function () {
+    return this.position;
+};
+Milestone.prototype.getEnd = function () {
+    return this.position;
 };
 Milestone.prototype.getWidth = function () {
     return 0;
@@ -93,6 +108,9 @@ Milestone.prototype.getPriority = function () {
 // modifications
 Milestone.prototype.removeDependent = Product.prototype.removeDependent;
 Milestone.prototype.removeDependency = Product.prototype.removeDependency;
+Milestone.prototype.addDependent = Product.prototype.addDependent;
+Milestone.prototype.addDependency = Product.prototype.addDependency;
+Milestone.prototype.setDirection = Product.prototype.setDirection;
 Milestone.prototype.resolveYCoord = function () {
     let offset = this.priorityGroup.yOffset;
     let value = this.level * TrakMap.VSPACE;
@@ -102,7 +120,42 @@ Milestone.prototype.setStartX = function (x) {
     this.position.x = x;
 };
 Milestone.prototype.setEndX = Milestone.prototype.setStartX;
+Milestone.prototype.deleteThis = function () {
+    assert (() => this.trakMap.milestones.indexOf(this) === -1);
+
+    this.incoming.slice().forEach(
+        dep => this.trakMap.deleteDependencyUnsafe(dep));
+    this.outgoing.slice().forEach(
+        dep => this.trakMap.deleteDependencyUnsafe(dep));
+
+    assert (() => this.incoming.length === 0);
+    assert (() => this.outgoing.length === 0);
+
+    this.priorityGroup.removeMilestone(this);
+};
+
 // user events
+// TODO: change date/time function
+// TODO: move up down function
+Milestone.prototype.createProductForward = function () {
+    let product = this.trakMap.addProduct({
+        "name": Product.DEFAULTNAME,
+        "comment": Product.DEFAULTCOMMENT,
+        "weight": Product.DEFAULTWEIGHT,
+        "priorityGroup": this.priorityGroup.index,
+        "level": this.level
+    });
+
+    this.trakMap.addDependency ({
+        "dependencyType": Dependency.MILESTONE,
+        "dependency": this.index,
+        "dependentType": Dependency.PRODUCT,
+        "dependent": product.index
+    });
+
+    this.trakMap.draw();
+}
+
 
 // testing
 Milestone.prototype.checkInvariants = function () {

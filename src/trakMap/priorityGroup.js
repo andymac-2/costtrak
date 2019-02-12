@@ -73,7 +73,7 @@ PriorityGroup.prototype.draw = function (parent) {
 
     Draw.menu (Draw.ALIGNLEFT, this.trakMap.unclicker, [{
         "icon": "icons/delete.svg",
-        "action": () => this.deleteThis()
+        "action": () => this.trakMap.deletePriorityGroup(this)
     }, {
         "icon": "icons/move-up.svg",
         "action": () => this.moveUp()
@@ -82,7 +82,7 @@ PriorityGroup.prototype.draw = function (parent) {
         "action": () => this.moveDown()
     }, {
         "icon": "icons/plus.svg",
-        "action": () => alert ("unimplemented")
+        "action": () => this.createMilestone()
     }], {
         "transform": "translate(" + left + ", " + (top - 45) + ")"
     }, productDesc);
@@ -114,7 +114,7 @@ PriorityGroup.prototype.addMilestone = function (milestone) {
     assert (() => milestone.priorityGroup === this);
     this.milestones.push (milestone);
 };
-PriorityGroup.prototype.removeMilestone = function (milexstone) {
+PriorityGroup.prototype.removeMilestone = function (milestone) {
     assert (() => milestone.priorityGroup === this);
     Util.removeFromArray (this.milestones, milestone);
 };
@@ -138,9 +138,9 @@ PriorityGroup.prototype.resolveLevels = function () {
     this.minLevel = Number.MAX_SAFE_INTEGER;
     this.maxLevel = Number.MIN_SAFE_INTEGER;
 
-    milestonesProducts = this.products.concat(this.milestones);
+    let milestonesProducts = this.products.concat(this.milestones);
     
-    this.milestonesProducts.sort(Product.compare).forEach (product => {        
+    milestonesProducts.sort(Product.compare).forEach (product => {        
         while (PriorityGroup.productOverlaps(levels, product)) {
             product.level += product.direction;
         }
@@ -199,14 +199,15 @@ PriorityGroup.prototype.modifyData = function (priorityGroupDesc) {
     }
 };
 PriorityGroup.prototype.deleteThis = function () {
-    this.products.slice().forEach (prod => prod.deleteThis());
-    this.milestones.slice().forEach (milestone => milestone.deleteThis());
-
-    assert (() => this.product.length === 0);
-    assert (() => this.milestone.length === 0);
+    assert (() => this.trakMap.priorityGroups.indexOf(this) === -1);
     
-    this.trakMap.removePriorityGroup(this);
-    this.trakMap.draw();
+    this.products.slice().forEach (
+        prod => this.trakMap.deleteProductUnsafe(prod));
+    this.milestones.slice().forEach (
+        milestone => this.trakMap.deleteMilestoneUnsafe(milestone));
+
+    assert (() => this.products.length === 0);
+    assert (() => this.milestones.length === 0);
 };
 PriorityGroup.prototype.moveUp = function () {
     assert (() => this.trakMap.priorityGroups[this.index] === this);
@@ -234,6 +235,15 @@ PriorityGroup.prototype.moveDown = function () {
 
     Util.swapIndexedElements(this.trakMap.priorityGroups, this.index,
                              this.index + 1);
+    this.trakMap.draw();
+};
+PriorityGroup.prototype.createMilestone = function () {
+    this.trakMap.addMilestone({
+        "priorityGroup": this.index,
+        "value": 0,
+        "level": 0
+    });
+
     this.trakMap.draw();
 };
 

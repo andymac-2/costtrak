@@ -47,7 +47,11 @@ Product.DEFAULTPRODUCT = {
 
 // static functions
 Product.compare = function (a, b) {
-    return a.value - b.value;
+    let diff = a.value - b.value;
+    if (diff !== 0) {
+        return diff;
+    }
+    return a.getWidth() - b.getWidth();
 };
 Product.compareEnds = function (a, b) {
     var diff = b.getEndValue() - a.getEndValue();
@@ -114,12 +118,10 @@ Product.prototype.drawLine = function (parent) {
     
     Draw.menu (Draw.ALIGNCENTER, this.trakMap.unclicker, [{
         "icon": "icons/arrow-left.svg",
-        "action": () => {
-            this.trakMap.select (TrakMap.SELDEPENDENT, this);
-        }
+        "action": () =>  this.trakMap.select (TrakMap.SELDEPENDENT, this)
     }, {
         "icon": "icons/delete.svg",
-        "action": () => this.deleteThis()
+        "action": () => this.trakMap.deleteProduct(this)
     }, {
         "icon": "icons/move-up.svg",
         "action": () => this.moveUp()
@@ -128,9 +130,7 @@ Product.prototype.drawLine = function (parent) {
         "action": () => this.moveDown()
     }, {
         "icon": "icons/arrow-right.svg",
-        "action": () => {
-            this.trakMap.select (TrakMap.SELDEPENDENCY, this);
-        }
+        "action": () => this.trakMap.select (TrakMap.SELDEPENDENCY, this)
     }], {
         "transform": "translate(" + lineCentreX + ", " + (this.start.y - 45) + ")"
     }, line);
@@ -149,7 +149,12 @@ Product.prototype.drawBubble = function (parent) {
 // query functions
 // a dependency is considered valid if it is higher or equal priority
 Product.prototype.hasValidDependencies = function () {
-    return this.incoming.some(dep => dep.dependency.getPriority() <= this.getPriority());
+    return this.incoming.some(
+        dep => dep.dependency.getPriority() <= this.getPriority());
+};
+Product.prototype.hasValidDependents = function () {
+    return this.outgoing.some(
+        dep => dep.dependent.getPriority() <= this.getPriority());
 };
 Product.prototype.getPriority = function () {
     return this.priorityGroup.priority;
@@ -159,6 +164,12 @@ Product.prototype.getStartValue = function () {
 };
 Product.prototype.getEndValue = function () {
     return this.value + this.weight;
+};
+Product.prototype.getStart = function () {
+    return this.start;
+};
+Product.prototype.getEnd = function () {
+    return this.end;
 };
 Product.prototype.getWidth = function () {
     return TrakMap.MINPRODUCTWIDTH + (TrakMap.UNITVALUEWIDTH * this.weight);
@@ -187,9 +198,17 @@ Product.prototype.removeDependency = function (dep) {
     assert (() => dep instanceof Dependency);
     Util.removeFromArray(this.incoming, dep);
 };
+Product.prototype.addDependency = function (dep) {
+    assert (() => dep.dependent === this)
+    this.incoming.push(dep);
+};
 Product.prototype.removeDependent = function (dep) {
     assert (() => dep instanceof Dependency);
     Util.removeFromArray (this.outgoing, dep);
+};
+Product.prototype.addDependent = function (dep) {
+    assert (() => dep.dependency === this);
+    this.outgoing.push(dep);
 };
 
 Product.prototype.modifyName = function (e, input) {
@@ -216,37 +235,23 @@ Product.prototype.modifyData = function (productDesc) {
     this.name = productDesc.title;
     this.weight = Math.max (Math.floor(productDesc.days), 1);
     this.comment = productDesc.comment;
-
-    let oldPG = this.priorityGroup
     
-    this.modifyPriorityGroup (productDesc.priorityGroup);
-
-    try {
-        this.trakMap.draw();
-    }
-    catch (err) {
-        if (err instanceof CircularDependencyError) {
-            this.modifyPriorityGroup (oldPG)
-            this.trakMap.draw();
-            alert ("Error: Circular dependency");
-        }
-        else {
-            throw err;
-        }
-    }
+    this.trakMap.makeSafeModification(
+        () => this.modifyPriorityGroup (productDesc.priorityGroup));
 };
 
 Product.prototype.deleteThis = function () {
-    this.incoming.slice().forEach(elem => elem.deleteThis());
-    this.outgoing.slice().forEach(elem => elem.deleteThis());
+    assert (() => this.trakMap.products.indexOf(this) === -1);
     
-    this.priorityGroup.removeProduct(this);
+    this.incoming.slice().forEach(
+        dep => this.trakMap.deleteDependencyUnsafe(dep));
+    this.outgoing.slice().forEach(
+        dep => this.trakMap.deleteDependencyUnsafe(dep));
 
     assert (() => this.incoming.length === 0);
     assert (() => this.outgoing.length === 0);
     
-    this.trakMap.removeProduct(this);
-    this.trakMap.draw();
+    this.priorityGroup.removeProduct(this);
 };
 
 Product.prototype.moveUp = function () {
@@ -269,9 +274,10 @@ Product.prototype.checkInvariants = function () {
 
     var maxValue = 0;
     this.incoming.forEach(dep => {
+        dep.checkInvariants();
         var testValue = dep.dependency.getEndValue();
         if (this.getPriority() <= dep.dependency.getPriority()) {
-            maxvalue = testvalue > maxvalue ? testvalue : maxvalue;
+            maxvalue = Math.max(testvalue, maxvalue)
         }
         assert (() => dep.dependent === this);
     });
@@ -279,6 +285,7 @@ Product.prototype.checkInvariants = function () {
 
     this.outgoing.forEach(dep => {
         assert (() => dep.dependency === this);
+        dep.checkInvariants()
     });
 
     assert (() => this.trakMap.products[this.index] === this);

@@ -3,7 +3,7 @@
 class CircularDependencyError extends Error {
     constructor (msg) {
         super (msg);
-        this.name = "CircularDependencyError"
+        this.name = "CircularDependencyError";
     }
 }
 
@@ -70,17 +70,14 @@ nodeWeightedGraph.topoSort = function (nodes) {
     }
 
     // cyclic graph.
-    if (active.length !== nodes.length) {
+    if (nodes.some(node => node.visited === false)) {
         throw new CircularDependencyError ("Circular dependency detected.");
     }
 
     return active;
 };
-nodeWeightedGraph.fulfilledDependencies =  function (node) {
-    return node.incoming.every(dep => {
-        return dep.dependency.visited === true ||
-            dep.dependency.getPriority() > node.getPriority()
-    });
+nodeWeightedGraph.fulfilledDependencies = function (node) {
+    return node.incoming.every(dep => dep.isDependencyFulfilled());
 };
 
 /** sort nodes by their minimal possible value.

@@ -6,14 +6,8 @@ var DateBubble = function (trakmap, product) {
 };
 
 DateBubble.prototype.draw = function (parent) {
-    if (this.product) {
-        var position = this.product.end;
-        var text = this.product.getEndValue();
-    }
-    else {
-        position = this.trakMap.origin;
-        text = "0";
-    }
+    var position = this.product.end;
+    var text = this.product.getEndValue();
     
     var dateBubble = Draw.svgElem("g", {
         "class": "dateBubble",
@@ -45,13 +39,10 @@ DateBubble.prototype.createProduct = function () {
         "name": Product.DEFAULTNAME,
         "comment": Product.DEFAULTCOMMENT,
         "weight": Product.DEFAULTWEIGHT,
-        "priorityGroup": this.product ? this.product.priorityGroup.index : 0,
-        "level": this.product ? this.product.level : 0
+        "priorityGroup": this.product.priorityGroup.index,
+        "level": this.product.level
     });
     
-    if (this.product) {
-        this.trakMap.newDependency (this.product, product);
-    }
-
+    this.trakMap.newDependency (this.product, product);
     this.trakMap.draw();
 }

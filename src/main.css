@@ -47,15 +47,13 @@ body {
     overflow: hidden;
 }
 
-
-
 /* date bubbles */
-.dateBubble ellipse{
+.dateBubble ellipse, .milestone path{
     fill: white;
     stroke: black;
 }
 
-.dateBubble text {
+.dateBubble text, .milestone text {
     font-size: xx-small;
 }
 
