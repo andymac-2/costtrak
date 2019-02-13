@@ -51,8 +51,17 @@ Product.compare = function (a, b) {
     if (diff !== 0) {
         return diff;
     }
+    // puts milestones first
     return a.getWidth() - b.getWidth();
 };
+Product.compareReverse = function (a, b) {
+    let diff = b.getEndValue() - a.getEndValue();
+    if (diff !== 0) {
+        return diff;
+    }
+    // puts milestones first
+    return a.getWidth() - b.getWidth();
+}
 Product.compareEnds = function (a, b) {
     var diff = b.getEndValue() - a.getEndValue();
     if (diff !== 0) {
@@ -94,23 +103,26 @@ Product.prototype.drawLine = function (parent) {
         this.trakMap.select (TrakMap.SELNORMAL, this);
     });
 
+    let start = this.getStart();
+    let end = this.getEnd();
+
     var lineClass = "priorityLine priority-" + this.getPriority();
     Draw.svgElem("line", {
         "class": lineClass,
-        "x1": this.start.x,
-        "y1": this.start.y,
-        "x2": this.end.x,
-        "y2": this.end.y
+        "x1": start.x,
+        "y1": start.y,
+        "x2": end.x,
+        "y2": end.y
     }, line);
 
-    var lineCentreX = (this.start.x + this.end.x - TrakMap.HSPACE) / 2
+    var lineCentreX = (start.x + end.x - TrakMap.HSPACE) / 2
 
     var description = new ProductDesc ({
         unclicker: this.trakMap.unclicker,
         onChange: (obj) => this.modifyData(obj),
         attrs: {
             "class": "productData",
-            "transform": "translate(" + lineCentreX + ", " + this.start.y + ")"
+            "transform": "translate(" + lineCentreX + ", " + start.y + ")"
         },
         product: this
     }, this.name, this.weight, this.comment, this.priorityGroup);
@@ -132,13 +144,8 @@ Product.prototype.drawLine = function (parent) {
         "icon": "icons/arrow-right.svg",
         "action": () => this.trakMap.select (TrakMap.SELDEPENDENCY, this)
     }], {
-        "transform": "translate(" + lineCentreX + ", " + (this.start.y - 45) + ")"
+        "transform": "translate(" + lineCentreX + ", " + (start.y - 45) + ")"
     }, line);
-
-    if (!this.hasValidDependencies()) {
-        Draw.straightLine (this.start, this.trakMap.origin, lineClass,
-                           this.trakMap.connections);
-    }
 
     return line;  
 };
@@ -166,10 +173,26 @@ Product.prototype.getEndValue = function () {
     return this.value + this.weight;
 };
 Product.prototype.getStart = function () {
-    return this.start;
+    if (this.trakMap.mode === TrakMap.GREEDYMODE) {
+        return {
+            x: this.start.x + TrakMap.HSPACE,
+            y: this.start.y
+        }
+    }
+    else if (this.trakMap.mode === TrakMap.LAZYMODE) {
+        return this.start;
+    }
 };
 Product.prototype.getEnd = function () {
-    return this.end;
+    if (this.trakMap.mode === TrakMap.LAZYMODE) {
+        return {
+            x: this.end.x - TrakMap.HSPACE,
+            y: this.end.y
+        }
+    }
+    else if (this.trakMap.mode === TrakMap.GREEDYMODE) {
+        return this.end;
+    }
 };
 Product.prototype.getWidth = function () {
     return TrakMap.MINPRODUCTWIDTH + (TrakMap.UNITVALUEWIDTH * this.weight);
@@ -191,7 +214,7 @@ Product.prototype.setEndX = function (x) {
     this.end.x = x;
 };
 Product.prototype.setStartX = function (x) {
-    this.start.x = x + TrakMap.HSPACE;
+    this.start.x = x;
 };
 // remove dependency and remove dependent used also by Milestone class.
 Product.prototype.removeDependency = function (dep) {
@@ -229,17 +252,6 @@ Product.prototype.modifyPriorityGroup = function (pg) {
     this.priorityGroup.addProduct(this);
 };
 
-// user functions.
-// accepts a ProductDesc Object
-Product.prototype.modifyData = function (productDesc) {
-    this.name = productDesc.title;
-    this.weight = Math.max (Math.floor(productDesc.days), 1);
-    this.comment = productDesc.comment;
-    
-    this.trakMap.makeSafeModification(
-        () => this.modifyPriorityGroup (productDesc.priorityGroup));
-};
-
 Product.prototype.deleteThis = function () {
     assert (() => this.trakMap.products.indexOf(this) === -1);
     
@@ -253,7 +265,16 @@ Product.prototype.deleteThis = function () {
     
     this.priorityGroup.removeProduct(this);
 };
-
+// user functions.
+// accepts a ProductDesc Object
+Product.prototype.modifyData = function (productDesc) {
+    this.name = productDesc.title;
+    this.weight = Math.max (Math.floor(productDesc.days), 1);
+    this.comment = productDesc.comment;
+    
+    this.trakMap.makeSafeModification(
+        () => this.modifyPriorityGroup (productDesc.priorityGroup));
+};
 Product.prototype.moveUp = function () {
     this.level += Product.GOINGUP;
     this.trakMap.setAllDirections(Product.GOINGDOWN);

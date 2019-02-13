@@ -65,14 +65,37 @@ Milestone.prototype.draw = function (parent) {
     }, milestone).textContent = this.getEndValue().toString();
 
     // TODO make this work for lazy mode
+    if (this.trakMap.mode === TrakMap.GREEDYMODE) {
+        Draw.menu (Draw.ALIGNCENTER, this.trakMap.unclicker, [{
+            "icon": "icons/arrow-right.svg",
+            "action": () => this.createProductForward()
+        }, {
+            "icon": "icons/delete.svg",
+            "action": () => this.trakMap.deleteMilestone(this),
+        }], {
+            "transform": "translate(0, -40)"
+        }, milestone);
+    }   
+    else if (this.trakMap.mode === TrakMap.LAZYMODE) {
+        Draw.menu (Draw.ALIGNCENTER, this.trakMap.unclicker, [{
+            "icon": "icons/arrow-left.svg",
+            "action": () => this.createProductBackward()
+        }, {
+            "icon": "icons/delete.svg",
+            "action": () => this.trakMap.deleteMilestone(this),
+        }], {
+            "transform": "translate(0, -40)"
+        }, milestone);
+    }
+
     Draw.menu (Draw.ALIGNCENTER, this.trakMap.unclicker, [{
-        "icon": "icons/arrow-right.svg",
-        "action": () => this.createProductForward()
+        "icon": "icons/move-up.svg",
+        "action": () => this.moveUp()
     }, {
-        "icon": "icons/delete.svg",
-        "action": () => this.trakMap.deleteMilestone(this),
+        "icon": "icons/move-down.svg",
+        "action": () => this.moveDown(),
     }], {
-        "transform": "translate(0, -40)"
+        "transform": "translate(0, 40)"
     }, milestone);
 };
 
@@ -111,6 +134,8 @@ Milestone.prototype.removeDependency = Product.prototype.removeDependency;
 Milestone.prototype.addDependent = Product.prototype.addDependent;
 Milestone.prototype.addDependency = Product.prototype.addDependency;
 Milestone.prototype.setDirection = Product.prototype.setDirection;
+Milestone.prototype.moveUp = Product.prototype.moveUp;
+Milestone.prototype.moveDown = Product.prototype.moveDown;
 Milestone.prototype.resolveYCoord = function () {
     let offset = this.priorityGroup.yOffset;
     let value = this.level * TrakMap.VSPACE;
@@ -137,24 +162,25 @@ Milestone.prototype.deleteThis = function () {
 // user events
 // TODO: change date/time function
 // TODO: move up down function
-Milestone.prototype.createProductForward = function () {
-    let product = this.trakMap.addProduct({
+Milestone.prototype.createProduct = function () {
+    return this.trakMap.addProduct({
         "name": Product.DEFAULTNAME,
         "comment": Product.DEFAULTCOMMENT,
         "weight": Product.DEFAULTWEIGHT,
         "priorityGroup": this.priorityGroup.index,
         "level": this.level
     });
-
-    this.trakMap.addDependency ({
-        "dependencyType": Dependency.MILESTONE,
-        "dependency": this.index,
-        "dependentType": Dependency.PRODUCT,
-        "dependent": product.index
-    });
-
+};
+Milestone.prototype.createProductForward = function () {
+    let product = this.createProduct();
+    this.trakMap.newDependency (this, product);
     this.trakMap.draw();
-}
+};
+Milestone.prototype.createProductBackward = function () {
+    let product = this.createProduct();
+    this.trakMap.newDependency (product, this);
+    this.trakMap.draw();
+};
 
 
 // testing

@@ -48,28 +48,25 @@ Loader.prototype.draw = function () {
         action: this.save.bind(this)
     }], {}, fileSegment.body);
 
-    var priorityGroupSegment = Draw.menuBarSegment("Group", menubar);
+    let priorityGroupSegment = Draw.menuBarSegment("Group", menubar);
     Draw.iconBar([{
          icon: "icons/plus.svg",
         action: () => this.trakMap.newPriorityGroup()
     }], {}, priorityGroupSegment.body);
 
-    // var reportSegment = Draw.menuBarSegment("Comparison", menubar);
-    // Draw.iconBar ([{
-    //     icon: "icons/camera.svg",
-    //     action: this.newReport.bind(this)
-    // }, {
-    //     icon: "icons/delete.svg",
-    //     action: this.deleteCurrReport.bind(this)
-    // }], {}, reportSegment.body);
+    let modeSegment = Draw.menuBarSegment("Mode", menubar);
+    Draw.iconBar([{
+         icon: "icons/arrow-two-left-right.svg",
+        action: () => this.trakMap.toggleMode()
+    }], {}, modeSegment.body);
 
-    var printSegment = Draw.menuBarSegment ("Print", menubar);
+    let printSegment = Draw.menuBarSegment ("Print", menubar);
     Draw.iconBar ([{
         icon: "icons/print.svg",
         action: this.print.bind(this)
     }], {}, printSegment.body);
 
-    var aboutSegment = Draw.menuBarSegment ("About", menubar);
+    let aboutSegment = Draw.menuBarSegment ("About", menubar);
     Draw.iconBar ([{
         icon: "icons/info.svg",
         action: () => alert(Loader.aboutText)

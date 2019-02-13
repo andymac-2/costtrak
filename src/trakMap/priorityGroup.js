@@ -128,7 +128,9 @@ PriorityGroup.prototype.resolveLevels = function () {
             milestone.direction === Product.GOINGDOWN;
     }));
 
-    if (this.products.length === 0) {
+    let milestonesProducts = this.products.concat(this.milestones); 
+
+    if (milestonesProducts.length === 0) {
         this.minLevel = 0;
         this.maxLevel = 0;
         return;
@@ -138,19 +140,28 @@ PriorityGroup.prototype.resolveLevels = function () {
     this.minLevel = Number.MAX_SAFE_INTEGER;
     this.maxLevel = Number.MIN_SAFE_INTEGER;
 
-    let milestonesProducts = this.products.concat(this.milestones);
-    
-    milestonesProducts.sort(Product.compare).forEach (product => {        
-        while (PriorityGroup.productOverlaps(levels, product)) {
-            product.level += product.direction;
-        }
-        levels[product.level] = product.getEndValue();
-        this.minLevel = Math.min (product.level, this.minLevel);
-        this.maxLevel = Math.max (product.level, this.maxLevel);
-    });
+    if (this.trakMap.mode === TrakMap.GREEDYMODE) {
+        milestonesProducts.sort(Product.compare).forEach (product => {        
+            while (PriorityGroup.productOverlapsGreedy(levels, product)) {
+                product.level += product.direction;
+            }
+            levels[product.level] = product.getEndValue();
+            this.minLevel = Math.min (product.level, this.minLevel);
+            this.maxLevel = Math.max (product.level, this.maxLevel);
+        });
+    } 
+    if (this.trakMap.mode === TrakMap.LAZYMODE) {
+        milestonesProducts.sort(Product.compareReverse).forEach (product => {        
+            while (PriorityGroup.productOverlapsLazy(levels, product)) {
+                product.level += product.direction;
+            }
+            levels[product.level] = product.getStartValue();
+            this.minLevel = Math.min (product.level, this.minLevel);
+            this.maxLevel = Math.max (product.level, this.maxLevel);
+        });
+    }     
 };
-
-PriorityGroup.productOverlaps = function (levels, product) {
+PriorityGroup.productOverlapsGreedy = function (levels, product) {
     if (levels[product.level] === undefined) {
         return false;
     }
@@ -160,7 +171,18 @@ PriorityGroup.productOverlaps = function (levels, product) {
     if (product.getWidth() === 0) {
         return product.getStartValue() <= levels[product.level];
     }
-}
+};
+PriorityGroup.productOverlapsLazy = function (levels, product) {
+    if (levels[product.level] === undefined) {
+        return false;
+    }
+    if (product.getWidth() > 0) {
+        return product.getEndValue() > levels[product.level];
+    }
+    if (product.getWidth() === 0) {
+        return product.getEndValue() >= levels[product.level];
+    }
+};
 
 //user events
 PriorityGroup.prototype.modifyPriority = function (priority) {
@@ -238,12 +260,7 @@ PriorityGroup.prototype.moveDown = function () {
     this.trakMap.draw();
 };
 PriorityGroup.prototype.createMilestone = function () {
-    this.trakMap.addMilestone({
-        "priorityGroup": this.index,
-        "value": 0,
-        "level": 0
-    });
-
+    this.trakMap.newMilestone(this.index, 0, 0);
     this.trakMap.draw();
 };
 

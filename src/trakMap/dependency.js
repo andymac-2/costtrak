@@ -91,7 +91,7 @@ Dependency.prototype.save = function () {
            this.trakMap.milestones[this.dependency.index] === this.dependency);
     assert(() => this.dependentType === Dependency.PRODUCT ?
            this.trakMap.products[this.dependent.index] === this.dependent :
-           this.trakMap.milestones[this.dependent.index === this.dependent]);
+           this.trakMap.milestones[this.dependent.index] === this.dependent);
     
     return {
         "dependencyType": this.dependencyType,
