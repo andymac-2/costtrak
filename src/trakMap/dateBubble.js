@@ -7,21 +7,18 @@ var DateBubble = function (trakmap, product) {
 
 DateBubble.prototype.draw = function (parent) {
     var position = this.getPosition()
-    var text = this.getText();
+    var text = this.getValue();
     
     var dateBubble = Draw.svgElem("g", {
         "class": "dateBubble",
         "transform": "translate(" + position.x + ", " + position.y + ")"
     }, parent);
     
-    Draw.svgElem ("ellipse", {
-        "cx": "0", "cy": "0", "rx": "15", "ry": "15"
+    Draw.svgElem ("circle", {
+        "cx": "0", "cy": "0", "r": "18"
     }, dateBubble);
     
-    Draw.svgElem ("text", {
-        "x": 0, "y": 4,
-        "text-anchor": "middle"
-    }, dateBubble).textContent = text;
+    this.drawDate (dateBubble);
 
     if (this.trakMap.mode === TrakMap.GREEDYMODE) {
         Draw.menu (Draw.ALIGNCENTER, this.trakMap.unclicker, [{
@@ -44,6 +41,24 @@ DateBubble.prototype.draw = function (parent) {
     return dateBubble;
 };
 
+DateBubble.prototype.drawDate = function (parent) {
+    let date = this.getDate();
+    let line1 = Util.getYear(date);
+    let line2 = Util.getShortMonth(date) + Util.getDate(date);
+
+    Draw.svgElem ("text", {
+        "x": 0,
+        "y": -3,
+        "text-anchor": "middle"
+    }, parent).textContent = line1;
+
+    Draw.svgElem ("text", {
+        "x": 0,
+        "y": 7,
+        "text-anchor": "middle"
+    }, parent).textContent = line2;
+}
+
 //queries
 DateBubble.prototype.getPosition = function () {
     if (this.trakMap.mode === TrakMap.GREEDYMODE) {
@@ -53,13 +68,16 @@ DateBubble.prototype.getPosition = function () {
         return this.product.getStart();
     }
 }
-DateBubble.prototype.getText = function () {
+DateBubble.prototype.getValue = function () {
     if (this.trakMap.mode === TrakMap.GREEDYMODE) {
         return this.product.getEndValue();
     }
     else if (this.trakMap.mode === TrakMap.LAZYMODE) {
         return this.product.getStartValue();
     }
+}
+DateBubble.prototype.getDate = function () {
+    return new Date(this.getValue() * 24 * 60 * 60 * 1000);
 }
 
 DateBubble.prototype.createProduct = function () {

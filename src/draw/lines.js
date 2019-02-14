@@ -43,11 +43,12 @@ Draw.bowedLine = function (start, end, lnClass, parent) {
 // create an s shaped curve, going to the right of the start and into the left of end.
 // strength indicates how curved the line will be
 Draw.sLine = function (start, end, strength, lnClass, parent) {
+    let diff = Math.sign (start.y - end.y) * 60;
     return Draw.svgElem ("path", {
         "class": lnClass,
         "d" : "M" + start.x + " " + start.y + " " +
-            "C" + (start.x + strength) + " " + start.y + " " +
-            (end.x - strength) + " " + end.y + " " +
+            "C" + (start.x + strength) + " " + (start.y - diff) + " " +
+            (end.x - strength) + " " + (end.y + diff) + " " +
             end.x + " " + end.y
     }, parent);
 };

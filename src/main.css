@@ -48,7 +48,7 @@ body {
 }
 
 /* date bubbles */
-.dateBubble ellipse, .milestone path{
+.dateBubble circle, .milestone path{
     fill: white;
     stroke: black;
 }
@@ -86,7 +86,7 @@ body {
 /* default */
 .priorityLine{
     stroke: #4D4D4D;
-    fill: #4D4D4D;
+    fill: none;
     stroke-width: 2;
     stroke-linecap: round;
 }
@@ -100,35 +100,27 @@ body {
 
 .priorityLine.priority-0 {
     stroke: #F15854;
-    fill: #F15854;
 }
 .priorityLine.priority-1 {
     stroke: #5DA5DA;
-    fill: #5DA5DA;
 }
 .priorityLine.priority-2 {
     stroke: #FAA43A;
-    fill: #FAA43A;
 }
 .priorityLine.priority-3 {
     stroke: #60BD68;
-    fill: #60BD68;
 }
 .priorityLine.priority-4 {
     stroke: #F17CB0;
-    fill: #F17CB0;
 }
 .priorityLine.priority-5 {
     stroke: #B2912F;
-    fill: #B2912F;
 }
 .priorityLine.priority-6 {
     stroke: #B276B2;
-    fill: #B276B2;
 }
 .priorityLine.priority-7 {
     stroke: #DECF3F;
-    fill: #DECF3F;
 }
 .priorityLine.slack {
     stroke: #b8b8b8;

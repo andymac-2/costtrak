@@ -7,9 +7,10 @@ Util.allertErr = function (err) {
      alert (err.name + ": " + err.message);
 };
 
-Util.max = function(a, b) {
-    return a > b ? a : b;
-};
+Util.max = function (a, b) {
+    Console.warn("Util.max is deprecated, use Math.max instead");
+    return Math.max (a, b);
+}
 
 Util.clamp = function (min, max, value) {
     value = value > max ? max : value;
@@ -242,3 +243,24 @@ Util.parseCSV = function (str) {
     }
     return arr;
 };
+
+// date utilities
+Util.getShortMonth = function (date) {
+    let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    return months[date.getUTCMonth()];
+};
+
+Util.getDate = function (date) {
+    return "" + date.getUTCDate();
+};
+Util.getYear = function (date) {
+    return "" + date.getUTCFullYear();
+};
+// returns today in terms of days since 1/1/1970
+Util.getDefaultDay = function () {
+    var now = new Date(Date.now());
+    var offset = now.getTimezoneOffset() * 60 * 1000;
+    let value = now.valueOf() - offset;
+    return Math.floor(value / (24 * 60 * 60 * 1000));
+}

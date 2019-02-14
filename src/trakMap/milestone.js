@@ -21,7 +21,7 @@ var Milestone = function (trakMap, index, obj) {
 };
 Milestone.DEFAULTMILESTONE = {
     "priorityGroup": 0,
-    "value": 0,
+    "value": Util.getDefaultDay(),
     "level": 0
 };
 
@@ -44,7 +44,7 @@ Milestone.prototype.save = function () {
 Milestone.prototype.toJSON = Milestone.prototype.save;
 
 //drawing
-Milestone.DIAMONDSIZE = 18;
+Milestone.DIAMONDSIZE = 21;
 Milestone.prototype.draw = function (parent) {
     let milestone = Draw.svgElem ("g", {
         "class": "milestone",
@@ -58,11 +58,7 @@ Milestone.prototype.draw = function (parent) {
             "L 0 -" + Milestone.DIAMONDSIZE + " Z"
     }, milestone);
 
-    Draw.svgElem ("text", {
-        "x": 0,
-        "y": 4,
-        "text-anchor": "middle"
-    }, milestone).textContent = this.getEndValue().toString();
+    this.drawDate(milestone);
 
     // TODO make this work for lazy mode
     if (this.trakMap.mode === TrakMap.GREEDYMODE) {
@@ -99,7 +95,13 @@ Milestone.prototype.draw = function (parent) {
     }, milestone);
 };
 
+Milestone.prototype.drawDate = DateBubble.prototype.drawDate;
+
 // queries. A lot of these are similar to the Product class.
+Milestone.prototype.getDate = DateBubble.prototype.getDate;
+Milestone.prototype.getValue = function () {
+    return this.value
+};
 Milestone.prototype.getEndValue = function () {
     return this.value;
 };

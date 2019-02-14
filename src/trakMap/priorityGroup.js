@@ -23,7 +23,6 @@ PriorityGroup.DEFAULTPRIORITYGROUP = {
     "comment": "",
     "priority": 0
 };
-
 // serialisation
 PriorityGroup.prototype.restore = function (obj) {
     assert (() => obj.priority >= 0);
@@ -260,7 +259,7 @@ PriorityGroup.prototype.moveDown = function () {
     this.trakMap.draw();
 };
 PriorityGroup.prototype.createMilestone = function () {
-    this.trakMap.newMilestone(this.index, 0, 0);
+    this.trakMap.newMilestone(this.index, Util.getDefaultDay(), 0);
     this.trakMap.draw();
 };
 

@@ -56,17 +56,15 @@ nodeWeightedGraph.topoSort = function (nodes) {
     for (var i = 0; i < active.length; i++) {
         active[i].visited = true;
 
-        var outgoing = active[i].outgoing;
-        
-        for (var j = 0; j < outgoing.length; j++) {
-            var dependent = outgoing[j].dependent;
+        active[i].outgoing.forEach (dep => {
+            let dependent = dep.dependent;
             if (this.fulfilledDependencies (dependent) &&
-                 dependent.visited === false)
+                dependent.visited === false)
             {
                 dependent.visited = true;
                 active.push(dependent);
-            }
-        }
+            }    
+        });
     }
 
     // cyclic graph.
@@ -97,6 +95,14 @@ nodeWeightedGraph.greedySort = function (nodes) {
         });
     });
 
+    assert (() => topoSorted.every(node => node.incoming.every(dep => {
+        if (dep.dependency.getPriority() <= node.getPriority()) {                                       
+            return node.value === Math.max(
+                node.value, dep.dependency.getEndValue());
+        }
+        return true;
+    })));
+
     return topoSorted.sort(Product.compare);
 };
 nodeWeightedGraph.lazySort = function (nodes) {
@@ -113,6 +119,16 @@ nodeWeightedGraph.lazySort = function (nodes) {
             }
         });
     });
+
+    // long assertion here, this does not modify node.value, just checks that it
+    // is correct
+    assert (() => topoSorted.every(node => node.outgoing.every(dep => {
+        if (dep.dependent.getPriority() <= node.getPriority()) {                                       
+            return node.value === Math.min(
+                node.value, dep.dependent.getStartValue() - node.weight);
+        }
+        return true;
+    })));
 
     return topoSorted.sort(Product.compare);
 };

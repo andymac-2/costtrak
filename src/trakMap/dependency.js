@@ -21,9 +21,6 @@ var Dependency = function (trakMap, index, obj) {
 
     this.index = index;
 
-    //view
-    this.elem;
-
     this.restore (obj);
 }
 Dependency.MILESTONE = 0;
@@ -44,20 +41,52 @@ Dependency.prototype.draw = function (parent) {
     connections.addEventListener(
         "dblclick", () => this.trakMap.deleteDependency(this));
 
-    if (this.dependency.getEndValue() === this.dependent.getStartValue() &&
-        this.dependency.getPriority() <= this.dependent.getPriority()){
-        var cls = "priorityLine priority-" + this.dependent.getPriority();
-        this.elem = Draw.straightLine(
+    if (this.isSolidLine()){
+        var cls = "priorityLine priority-" + this.getPriority();
+        Draw.straightLine(
             this.dependent.getStart(), this.dependency.getEnd(), cls, connections);      
     }
     else {
-        this.elem = Draw.doubleAngledLine(
-            this.dependent.getStart(), this.dependency.getEnd(), TrakMap.HSPACE,
-            TrakMap.VSPACE, "priorityLine slack", connections);
+        let start = this.dependency.getEnd();
+        let end = this.dependent.getStart();
+        let diff = Math.max (100, Math.abs(start.x - end.x));
+
+        Draw.sLine(start, end, 100, "priorityLine slack", connections);
+        // Draw.doubleAngledLine(
+        //     this.dependent.getStart(), this.dependency.getEnd(), TrakMap.HSPACE,
+        //     TrakMap.VSPACE, "priorityLine slack", connections);
     }
 
     return connections;
 };
+
+Dependency.prototype.isSolidLine = function () {
+    if (this.dependency.getEndValue() !== this.dependent.getStartValue()) {
+        return false;
+    }
+    if (this.trakMap.mode === TrakMap.GREEDYMODE) {
+        if (this.dependentType === Dependency.MILESTONE) {
+            return false;
+        }
+        return this.dependency.getPriority() <= this.dependent.getPriority()
+    }
+    if (this.trakMap.mode === TrakMap.LAZYMODE) {
+        if (this.dependencyType === Dependency.MILESTONE) {
+            return false;
+        }
+        return this.dependency.getPriority() >= this.dependent.getPriority() 
+    }
+    assert (() => false);
+}
+
+Dependency.prototype.getPriority = function () {
+    if (this.trakMap.mode === TrakMap.GREEDYMODE) {
+        return this.dependent.getPriority();
+    }
+    if (this.trakMap.mode === TrakMap.LAZYMODE) {
+        return this.dependency.getPriority();
+    }
+}
 
 // Serialisation methods
 Dependency.prototype.restore = function (obj) {
