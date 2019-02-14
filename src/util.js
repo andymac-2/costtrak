@@ -245,22 +245,37 @@ Util.parseCSV = function (str) {
 };
 
 // date utilities
+Util.ONEDAY = 24 * 60 * 60 * 1000;
 Util.getShortMonth = function (date) {
     let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     return months[date.getUTCMonth()];
 };
-
 Util.getDate = function (date) {
     return "" + date.getUTCDate();
 };
 Util.getYear = function (date) {
     return "" + date.getUTCFullYear();
 };
+Util.getISODateOnly = function (date) {
+    return date.toISOString().slice(0, 10);
+};
+// days since 1/1/1970
+Util.getDateFromDays = function (days) {
+    return new Date (days * Util.ONEDAY);
+}
+Util.getDaysFromInputElem = function (elem) {
+    let dateVal = new Date(elem.value + "T00:00:00.000Z").valueOf();
+    return Util.daysFromDateValue(dateVal);
+};
+// milliseconds since 1/1/1970
+Util.daysFromDateValue = function (dateVal) {
+    var date = new Date(dateVal);
+    var offset = date.getTimezoneOffset() * 60 * 1000;
+    let value = date.valueOf() - offset;
+    return Math.floor(value / Util.ONEDAY);
+}
 // returns today in terms of days since 1/1/1970
 Util.getDefaultDay = function () {
-    var now = new Date(Date.now());
-    var offset = now.getTimezoneOffset() * 60 * 1000;
-    let value = now.valueOf() - offset;
-    return Math.floor(value / (24 * 60 * 60 * 1000));
+    return Util.daysFromDateValue(Date.now());
 }

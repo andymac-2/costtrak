@@ -77,7 +77,7 @@ DateBubble.prototype.getValue = function () {
     }
 }
 DateBubble.prototype.getDate = function () {
-    return new Date(this.getValue() * 24 * 60 * 60 * 1000);
+    return Util.getDateFromDays(this.getValue());
 }
 
 DateBubble.prototype.createProduct = function () {

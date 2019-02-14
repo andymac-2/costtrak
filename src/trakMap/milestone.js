@@ -84,6 +84,16 @@ Milestone.prototype.draw = function (parent) {
         }, milestone);
     }
 
+    new Draw.svgDateInput ({
+        alignment: Draw.ALIGNCENTER,
+        unclicker: this.trakMap.unclicker,
+        onchange: (e, elem) => this.setDate(elem.date),
+        parent: milestone,
+        attrs: {
+            "transform": "translate(0, 0)"
+        }
+    }, this.getValue());
+
     Draw.menu (Draw.ALIGNCENTER, this.trakMap.unclicker, [{
         "icon": "icons/move-up.svg",
         "action": () => this.moveUp()
@@ -163,7 +173,11 @@ Milestone.prototype.deleteThis = function () {
 
 // user events
 // TODO: change date/time function
-// TODO: move up down function
+Milestone.prototype.setDate = function (date) {
+    this.value = date;
+    this.trakMap.draw();
+};
+
 Milestone.prototype.createProduct = function () {
     return this.trakMap.addProduct({
         "name": Product.DEFAULTNAME,
@@ -183,7 +197,6 @@ Milestone.prototype.createProductBackward = function () {
     this.trakMap.newDependency (product, this);
     this.trakMap.draw();
 };
-
 
 // testing
 Milestone.prototype.checkInvariants = function () {

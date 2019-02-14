@@ -56,6 +56,10 @@ body {
 .dateBubble text, .milestone text {
     font-size: xx-small;
 }
+/* milestones */
+.svgDateBox {
+    width: 90%
+}
 
 /* Products */
 .productName {

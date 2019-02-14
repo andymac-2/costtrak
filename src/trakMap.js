@@ -38,7 +38,7 @@ var TrakMap = function (obj, parent) {
     this.restore(obj);
     this.draw();
 };
-TrakMap.HSPACE = 30;
+TrakMap.HSPACE = 44;
 TrakMap.MINPRODUCTWIDTH = 230;
 TrakMap.UNITVALUEWIDTH = 3;
 TrakMap.VSPACE = 70;
