@@ -39,7 +39,7 @@ var TrakMap = function (obj, parent) {
     this.draw();
 };
 TrakMap.HSPACE = 44;
-TrakMap.MINPRODUCTWIDTH = 230;
+TrakMap.MINPRODUCTWIDTH = 250;
 TrakMap.UNITVALUEWIDTH = 3;
 TrakMap.VSPACE = 70;
 TrakMap.PRIORITYSPACE = 130;
@@ -313,6 +313,9 @@ TrakMap.prototype.makeSafeModification = function (func) {
         this.restore(backup);
         this.draw();
         alert (e.name + ": " + e.message);
+        if (!NDEBUG) {
+            throw e;
+        }
     }
 };
 
@@ -345,6 +348,9 @@ TrakMap.prototype.toggleMode = function () {
     }
 };
 TrakMap.prototype.setMode = function (mode) {
+    this.makeSafeModification(() => this.setModeUnsafe(mode));
+};
+TrakMap.prototype.setModeUnsafe = function (mode) {
     assert (() => mode === TrakMap.GREEDYMODE || 
         mode === TrakMap.LAZYMODE);
 
@@ -375,8 +381,6 @@ TrakMap.prototype.setMode = function (mode) {
             assert (() => product.hasValidDependents());
         });
     }
-
-    this.draw();
 };
 
 // selection state in order of high to low priority.

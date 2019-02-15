@@ -67,15 +67,50 @@ nodeWeightedGraph.topoSort = function (nodes) {
         });
     }
 
+    assert (() => active.every(prod => prod instanceof Product));
     // cyclic graph.
     if (nodes.some(node => node.visited === false)) {
         throw new CircularDependencyError ("Circular dependency detected.");
     }
-
+    assert (() => active.length === nodes.length);
     return active;
 };
+nodeWeightedGraph.topoSortLazy = function (nodes) {
+    nodes.forEach(node => node.visited = false)
+    let active = nodes
+        .filter(node => this.fulfilledDependents(node))
+        .map(node => {
+            node.visited = true
+            return node;
+        });
+    
+    for (var i = 0; i < active.length; i++) {
+        active[i].visited = true;
+
+        active[i].incoming.forEach (dep => {
+            let dependency = dep.dependency;
+            if (this.fulfilledDependents (dependency) &&
+                dependency.visited === false)
+            {
+                dependency.visited = true;
+                active.push(dependency);
+            }    
+        });
+    }
+
+    assert (() => active.every(prod => prod instanceof Product));
+    if (nodes.some(node => node.visited === false)) {
+        throw new CircularDependencyError ("Circular dependency detected.");
+    }
+    assert (() => active.length === nodes.length);
+    return active;
+};
+
 nodeWeightedGraph.fulfilledDependencies = function (node) {
     return node.incoming.every(dep => dep.isDependencyFulfilled());
+};
+nodeWeightedGraph.fulfilledDependents = function (node) {
+    return node.outgoing.every(dep => dep.isDependentFulfilled());
 };
 
 /** sort nodes by their minimal possible value.
@@ -86,49 +121,46 @@ nodeWeightedGraph.greedySort = function (nodes) {
 
     topoSorted.forEach(node => {
         node.value = Number.MIN_SAFE_INTEGER;
-
         node.incoming.forEach(dep => {
-            let dependency = dep.dependency;
-            if (dependency.getPriority() <= node.getPriority()) {                                       
-                node.value = Math.max(node.value, dependency.getEndValue());
+            if (dep.hasValidDependency()) {                                       
+                node.value = Math.max(node.value, dep.dependency.getEndValue());
             }
         });
     });
 
-    assert (() => topoSorted.every(node => node.incoming.every(dep => {
-        if (dep.dependency.getPriority() <= node.getPriority()) {                                       
-            return node.value === Math.max(
-                node.value, dep.dependency.getEndValue());
-        }
-        return true;
-    })));
+    assert (() => topoSorted.every(node => node instanceof Product));
+    assert (() => topoSorted.every(node => {
+        let max = node.incoming
+            .filter(dep => dep.hasValidDependency())
+            .map(dep => dep.dependency.getEndValue())
+            .reduce((acc, curr) => Math.max (acc, curr))
+        return node.value === max;
+    }));
 
     return topoSorted.sort(Product.compare);
 };
 nodeWeightedGraph.lazySort = function (nodes) {
-    var topoSorted = this.topoSort (nodes);
+    var topoSorted = this.topoSortLazy (nodes);
 
-    topoSorted.reverse().forEach(node => {
+    topoSorted.forEach(node => {
         node.value = Number.MAX_SAFE_INTEGER;
-
         node.outgoing.forEach(dep => {
-            let dependent = dep.dependent;
-            if (dependent.getPriority() <= node.getPriority()) {                                       
+            if (dep.hasValidDependent()) {                                       
                 node.value = Math.min(
-                    node.value, dependent.getStartValue() - node.weight);
+                    node.value, dep.dependent.getStartValue() - node.weight);
             }
         });
     });
-
     // long assertion here, this does not modify node.value, just checks that it
     // is correct
-    assert (() => topoSorted.every(node => node.outgoing.every(dep => {
-        if (dep.dependent.getPriority() <= node.getPriority()) {                                       
-            return node.value === Math.min(
-                node.value, dep.dependent.getStartValue() - node.weight);
-        }
-        return true;
-    })));
+    assert (() => topoSorted.every(node => node instanceof Product));
+    assert (() => topoSorted.every(node => {
+        let min = node.outgoing
+            .filter(dep => dep.hasValidDependent())
+            .map(dep => dep.dependent.getStartValue())
+            .reduce((acc, curr) => Math.min (acc, curr))
+        return node.value === min - node.weight;
+    }));
 
     return topoSorted.sort(Product.compare);
 };

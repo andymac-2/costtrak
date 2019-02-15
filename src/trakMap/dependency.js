@@ -65,16 +65,10 @@ Dependency.prototype.isSolidLine = function () {
         return false;
     }
     if (this.trakMap.mode === TrakMap.GREEDYMODE) {
-        if (this.dependentType === Dependency.MILESTONE) {
-            return false;
-        }
-        return this.dependency.getPriority() <= this.dependent.getPriority()
+        return this.hasValidDependency();
     }
     if (this.trakMap.mode === TrakMap.LAZYMODE) {
-        if (this.dependencyType === Dependency.MILESTONE) {
-            return false;
-        }
-        return this.dependency.getPriority() >= this.dependent.getPriority() 
+        return this.hasValidDependent();
     }
     assert (() => false);
 }
@@ -133,11 +127,27 @@ Dependency.prototype.toJSON = Dependency.prototype.save;
 
 //queries
 Dependency.prototype.isDependencyFulfilled = function () {
-    return this.dependencyType === Dependency.MILESTONE ||
-        this.dependency.visited ||
-        this.dependency.getPriority() > this.dependent.getPriority();
+    return !this.hasValidDependency() || 
+        this.dependencyType === Dependency.MILESTONE ||
+        this.dependency.visited;
 };
-
+Dependency.prototype.isDependentFulfilled = function () {
+    return !this.hasValidDependent() || 
+        this.dependentType === Dependency.MILESTONE ||
+        this.dependent.visited;
+};
+Dependency.prototype.hasValidDependency = function () {
+    if (this.dependentType === Dependency.MILESTONE) {
+        return false;
+    }
+    return this.dependency.getPriority() <= this.dependent.getPriority();
+};
+Dependency.prototype.hasValidDependent = function () {
+    if (this.dependencyType === Dependency.MILESTONE) {
+        return false;
+    }
+    return this.dependent.getPriority() <= this.dependency.getPriority();
+};
 //modifications
 Dependency.prototype.deleteThis  = function () {
     assert (() => this.trakMap.dependencies.indexOf(this) === -1);

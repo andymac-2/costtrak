@@ -90,7 +90,7 @@ Milestone.prototype.draw = function (parent) {
         onchange: (e, elem) => this.setDate(elem.date),
         parent: milestone,
         attrs: {
-            "transform": "translate(0, 0)"
+            "transform": "translate(0, 3)"
         }
     }, this.getValue());
 
@@ -134,7 +134,7 @@ Milestone.prototype.hasValidDependencies = function () {
     return false;
 };
 Milestone.prototype.fulfilledDependencies = function () {
-    return true;
+    return false;
 };
 Milestone.prototype.getPriority = function () {
     return this.priorityGroup.priority;

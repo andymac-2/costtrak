@@ -85,6 +85,7 @@ Product.prototype.restore = function (obj) {
 Product.prototype.save = function () {
     return {
         "name": this.name,
+        "comment": this.comment,
         "weight": this.weight,
         "priorityGroup": this.priorityGroup.index,
         "level": this.level
@@ -115,7 +116,7 @@ Product.prototype.drawLine = function (parent) {
         "y2": end.y
     }, line);
 
-    var lineCentreX = (start.x + end.x - TrakMap.HSPACE) / 2
+    var lineCentreX = (start.x + end.x) / 2
 
     var description = new ProductDesc ({
         unclicker: this.trakMap.unclicker,

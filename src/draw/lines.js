@@ -28,9 +28,9 @@ Draw.quadrupleAngledLine = function (start, end, hspace, vspace, lnClass, parent
     }, parent);
 };
 Draw.bowedLine = function (start, end, lnClass, parent) {
-    var ybow = (start.x - end.x) * 0.1;
+    var ybow = (start.x - end.x) * 0.3;
     ybow = Util.clamp (-45, 45, ybow);
-    var xbow = ybow * 4;
+    var xbow = ybow * 2;
     return Draw.svgElem ("path", {
         "class": lnClass,
         "d" : "M" + start.x + " " + start.y + " " +

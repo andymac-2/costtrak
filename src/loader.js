@@ -109,8 +109,6 @@ Loader.prototype.print = function () {
         window.print();
         this.parent.innerHTML = "";
         this.parent.appendChild(this.elem);
-        
-        //newWindow.close();
     }
     catch (err) {
         Util.allertErr(err);
