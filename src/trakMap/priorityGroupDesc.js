@@ -55,7 +55,7 @@ PriorityGroupDesc.prototype.onclick = function (parent) {
         "class": "svgTextBox",
         "value": this.title,
         "type": "text",
-        "placeholder": "Priority Group Name"
+        "placeholder": "Product Group Name"
     }, foreign);
     
     titleBox.addEventListener("change", () => this.modifyTitle(titleBox));
@@ -80,7 +80,7 @@ PriorityGroupDesc.prototype.onclick = function (parent) {
         "class": "svgCommentBox comment",
         "value": this.comment,
         "type": "text",
-        "placeholder": "Priority Group Comment"
+        "placeholder": "Product Group Comment"
     }, foreign);
 
     commentBox.addEventListener("change", () => this.modifyComment(commentBox));
@@ -98,7 +98,8 @@ PriorityGroupDesc.prototype.onunclick = function (parent) {
         "transform": "translate(0, -10)",
     }, parent);
     title.textContent = Util.truncate(
-        this.title, PriorityGroupDesc.MAXTEXTLENGTH);
+        "Priority " + this.priority + ": " + this.title, 
+        PriorityGroupDesc.MAXTEXTLENGTH);
 
     var comment = Draw.svgElem ("text", {
         "class": "priorityGroupComment comment",
