@@ -95,7 +95,9 @@ TrakMap.prototype.draw = function (parent) {
         this.getTop() + " " + 
         width + " " +
         height + " ");
-    parent.appendChild(this.elem);
+    if (parent) {
+        parent.appendChild(this.elem);
+    }
 
     this.elem.innerHTML = "";
 
