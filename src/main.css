@@ -73,11 +73,11 @@ body {
     width: 1px;
 }
 .productComment {
-    flex-grow: 3;
+    flex-grow: 4;
     width: 1px;
 }
 .productPriorityGroup {
-    flex-grop: 2;
+    flex-grow: 1;
     width: 1px;
 }
 
