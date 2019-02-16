@@ -141,12 +141,13 @@ TrakMap.prototype.resolveCoordinates = function () {
     // Step 2: resolve x coordinates
     var heap = new MinHeap (Product.compareEnds);
     var cursor = 0;
-    var lastValue = 0;
     this.rightMost = 0;
 
     let sortedProducts = this.products
         .concat(this.milestones)
         .sort(Product.compare);
+
+    let lastValue = sortedProducts[0].getStartValue(); 
 
     sortedProducts.forEach(product => {
         // go through heap elements <= our current value, heap
@@ -167,8 +168,10 @@ TrakMap.prototype.resolveCoordinates = function () {
 
         // add the product itself
         if (lastValue !== product.getStartValue()) {
+            let oldLast = lastValue;
             lastValue = product.getStartValue();
-            cursor += TrakMap.HSPACE;
+            cursor += TrakMap.HSPACE + 
+                (lastValue - oldLast) * TrakMap.UNITVALUEWIDTH;
         }
 
         product.setStartX(cursor);
