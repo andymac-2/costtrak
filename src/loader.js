@@ -75,8 +75,11 @@ Loader.prototype.draw = function () {
         action: () => window.open("https://andymac-2.github.io/trakmap/instructions")
     }], {}, aboutSegment.body);
 
-    this.elem.appendChild(this.trakMap.elem);
-    this.trakMap.draw();
+    Draw.elem("div", {
+        "class": "menuBarPlaceholder"
+    }, this.elem);
+
+    this.trakMap.draw(this.elem);
 };
 
 // user events
@@ -101,11 +104,9 @@ Loader.prototype.loadFile = function () {
 };
 
 Loader.prototype.print = function () {
-    var trakMap = new TrakMap (this.trakMap.save());
-    
     try {
-        trakMap.draw();
-        this.parent.innerHTML = trakMap.elem.outerHTML;
+        this.parent.innerHTML = ""
+        this.trakMap.draw(this.parent);
         window.print();
         this.parent.innerHTML = "";
         this.parent.appendChild(this.elem);

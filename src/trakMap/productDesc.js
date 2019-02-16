@@ -30,7 +30,7 @@ ProductDesc.prototype.restore = function (title, days, comment, priorityGroup) {
     this.title = title;
     this.title = this.title === "" ? "Untitled": this.title;
     this.days = days;
-     this.comment = comment;
+    this.comment = comment;
     this.comment = this.comment === "" ? "" : this.comment;
     this.priorityGroup = priorityGroup;
 };

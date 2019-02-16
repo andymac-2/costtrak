@@ -88,8 +88,8 @@ PriorityGroup.prototype.draw = function (parent) {
 };
 
 //queries
-PriorityGroup.BOTTOMMARGIN = 40;
-PriorityGroup.TOPMARGIN = 60;
+PriorityGroup.BOTTOMMARGIN = 50;
+PriorityGroup.TOPMARGIN = 50;
 PriorityGroup.prototype.getTop = function () {
     return this.yOffset + (this.minLevel * TrakMap.VSPACE) -
         PriorityGroup.TOPMARGIN;

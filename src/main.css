@@ -4,6 +4,9 @@ body {
 }
 
 /* generic */
+.scrollBox {
+    overflow: auto;
+}
 .comment {
     stroke: none;
     fill: #a0a0a0;
@@ -19,7 +22,11 @@ body {
 .menubar {
     padding: 0px;   
     display: flex;
+    position: fixed;
     flex-wrap: wrap;
+}
+.menuBarPlaceholder {
+    height: 65px;
 }
 .menuBarSegment {
     border: 1px solid #888;

@@ -1,33 +1,15 @@
 'use strict'
 
 var TrakMap = function (obj, parent) {
-    // View
-    this.elem = Draw.svgElem ("svg", {
-        "width": "3100",
-        "viewBox": "-100, -100, 3000, 1000"
-    }, parent);
-
-    this.parent;
-
-    if (parent) {
-        this.parent = parent;
-    }
-
-    // SVG layers from background to foreground
-    this.connections;
-    this.lines;
-    this.bubbles;
-    this.menus;
-
     //View model (calculated)
     this.rightMost = 0;
+    this.bottom = 0;
 
     // graph elements (state)
     this.products = [];
     this.milestones = [];
     this.dependencies = [];
     this.priorityGroups = [];
-    this.start;
     this.mode;
 
     // selections
@@ -44,6 +26,7 @@ TrakMap.UNITVALUEWIDTH = 3;
 TrakMap.VSPACE = 70;
 TrakMap.PRIORITYSPACE = 130;
 TrakMap.MARGIN = 30;
+TrakMap.PAGEMARGIN = 40;
 
 TrakMap.LAZYMODE = 0;
 TrakMap.GREEDYMODE = 1;
@@ -58,7 +41,6 @@ TrakMap.NEWFILE = {
     "dependencies": [
         Dependency.DEFAULTDEPENDENCY
     ],
-    "start": 0,
     "mode": TrakMap.GREEDYMODE,
     "priorityGroups": [
         PriorityGroup.DEFAULTPRIORITYGROUP
@@ -67,7 +49,6 @@ TrakMap.NEWFILE = {
 
 TrakMap.prototype.save = function () {
     return {
-        "start": this.start,
         "mode": this.mode,
         "priorityGroups": this.priorityGroups,
         "products": this.products.map(product => product.save()),
@@ -77,7 +58,6 @@ TrakMap.prototype.save = function () {
 };
 
 TrakMap.prototype.restore = function (obj) {
-    this.start = obj.start;
     this.mode = obj.mode;
 
     this.priorityGroups = [];
@@ -101,26 +81,39 @@ TrakMap.prototype.restore = function (obj) {
     });
 };
 
-TrakMap.prototype.draw = function () {
+TrakMap.prototype.draw = function (parent) {
     this.resolveCoordinates();
+
+    let width = this.getRight() - this.getLeft();
+    let height = this.getBottom() - this.getTop();
+
+    let svg = Draw.svgElem ("svg", {
+        "width": "" + width,
+        "viewBox": "" + 
+            this.getLeft() + " " +
+            this.getTop() + " " + 
+            width + " " +
+            height + " "
+    }, parent);
 
     this.elem.innerHTML = "";
 
-    this.connections =  Draw.svgElem("g", {"class": "TMConnections"}, this.elem);
-    this.lines =  Draw.svgElem("g", {"class": "TMProducts"}, this.elem);
-    this.bubbles =  Draw.svgElem("g", {"class": "TMBubbles"}, this.elem);
-    this.menus =  Draw.svgElem("g", {"class": "TMMenus"}, this.elem);
+    let connections =  Draw.svgElem("g", {"class": "TMConnections"}, svg);
+    let lines =  Draw.svgElem("g", {"class": "TMProducts"}, svg);
+    let bubbles =  Draw.svgElem("g", {"class": "TMBubbles"}, svg);
 
     this.products.forEach (product => {
-        product.drawLine(this.lines);
-        product.drawBubble(this.bubbles);
+        product.drawLine(lines);
+        product.drawBubble(bubbles);
     });
-    this.milestones.forEach (milestone => milestone.draw(this.bubbles));
-    this.dependencies.forEach (dependency => dependency.draw(this.connections));
+    this.milestones.forEach (milestone => milestone.draw(bubbles));
+    this.dependencies.forEach (dependency => dependency.draw(connections));
 
     this.priorityGroups.forEach (priorityGroup => {
-        priorityGroup.draw(this.lines);
+        priorityGroup.draw(lines);
     });
+
+    return svg;
 };
 
 TrakMap.prototype.resolveCoordinates = function () {
@@ -139,52 +132,69 @@ TrakMap.prototype.resolveCoordinates = function () {
     this.resolveYValues ();
 
     // Step 2: resolve x coordinates
-    var heap = new MinHeap (Product.compareEnds);
+    this.resolveXValues();
+};
+// Resolving X values. The following properties should hold true:
+// 1. Date bubbles and milestones must be in order. Date bubbles with lower
+//    values must appear strictly left of those with higher values.
+// 2. Date bubbles/milestones with the same date should appear with the same
+//    horizontal position
+// 3. Products have a minimum width, which should not be violated. The minimum X
+//    value is given by the getMinEndX() method of products/milestones once the
+//    start X has been set.
+// 4. Date bubbles/milestones must appear with a minimum distance apart given by
+//    the formula: (TrakMap.HSPACE + dateDifference * Trakmap.UNITVLUEWIDTH)
+//
+// This prevents dates which are obviously too far apart in time appearing too
+//    close to each other on the diagram. It also allocates enough width to
+//    display product titles and other data.
+TrakMap.prototype.resolveXValues = function () {
+    var heap = new MinHeap(Product.compareEnds);
     var cursor = 0;
     this.rightMost = 0;
-
     let sortedProducts = this.products
         .concat(this.milestones)
         .sort(Product.compare);
-
-    let lastValue = sortedProducts[0].getStartValue(); 
+    let lastValue = sortedProducts[0].getStartValue();
 
     sortedProducts.forEach(product => {
         // go through heap elements <= our current value, heap
         // elements should be traversed with priority.
         while (!heap.empty() &&
-               (heap.getMin().getEndValue() <= product.getStartValue()))
+            (heap.getMin().getEndValue() <= product.getStartValue()))
         {
             var min = heap.getMin();
             if (lastValue !== min.getEndValue()) {
+                let oldLast = lastValue;
                 lastValue = min.getEndValue();
-                cursor = Math.max(cursor + TrakMap.HSPACE, min.getMinEndX());
+                cursor += TrakMap.HSPACE +
+                    (lastValue - oldLast) * TrakMap.UNITVALUEWIDTH;
+                cursor = Math.max(cursor, min.getMinEndX());
             }
-
-            this.rightMost = Math.max (this.rightMost, cursor);
+            this.rightMost = Math.max(this.rightMost, cursor);
             min.setEndX(cursor);
             heap.deleteMin();
         }
-
         // add the product itself
         if (lastValue !== product.getStartValue()) {
             let oldLast = lastValue;
             lastValue = product.getStartValue();
-            cursor += TrakMap.HSPACE + 
+            cursor += TrakMap.HSPACE +
                 (lastValue - oldLast) * TrakMap.UNITVALUEWIDTH;
         }
-
         product.setStartX(cursor);
         heap.add(product);
     });
-
     var min;
     while (min = heap.deleteMin()) {
         if (lastValue !== min.getEndValue()) {
+            let oldLast = lastValue;
             lastValue = min.getEndValue();
-            cursor = Math.max(cursor + TrakMap.HSPACE, min.getMinEndX());
+            cursor += TrakMap.HSPACE +
+                (lastValue - oldLast) * TrakMap.UNITVALUEWIDTH;
+            cursor = Math.max(cursor, min.getMinEndX());
         }
-        this.rightMost = Math.max (this.rightMost, cursor);
+        this.rightMost = Math.max(this.rightMost, cursor);
         min.setEndX(cursor);
     }
 };
@@ -221,6 +231,7 @@ TrakMap.prototype.resolvePriorityGroupOffsets = function () {
         let levelDiff = priorityGroup.maxLevel - priorityGroup.minLevel;
         boundary += TrakMap.VSPACE * levelDiff + TrakMap.PRIORITYSPACE;
     });
+    this.bottom = boundary;
 };
 TrakMap.prototype.resolvePriorityLevels = function () {
     this.priorityGroups.forEach (priorityGroup => {
@@ -233,13 +244,24 @@ TrakMap.prototype.resolveYValues = function () {
 };
 
 //onchange takes one argument: the selected priority group
-TrakMap.prototype.drawPriorityGroupSelector =
-    function (onchange, attrs, parent)
-{
+TrakMap.prototype.drawPriorityGroupSelector = function(onchange, attrs, parent){
     let entries = this.priorityGroups.map(priorityGroup => priorityGroup.name);
     Draw.dropDown ((evt) => {
         onchange(this.priorityGroups[evt.currentTarget.value])
     }, entries, attrs, parent);
+};
+// queries
+TrakMap.prototype.getTop = function () {
+    return -TrakMap.MARGIN -PriorityGroup.TOPMARGIN;
+};
+TrakMap.prototype.getLeft = function () {
+    return -PriorityGroup.LEFTMARGIN - TrakMap.MARGIN;
+};
+TrakMap.prototype.getRight = function () {
+    return this.rightMost + PriorityGroup.LEFTMARGIN + TrakMap.MARGIN;
+};
+TrakMap.prototype.getBottom = function () {
+    return this.bottom;
 };
 
 // modifictions:
@@ -429,3 +451,4 @@ TrakMap.prototype.select = function (type, obj) {
         this.selType = type;
     }
 };
+
