@@ -104,17 +104,10 @@ Loader.prototype.loadFile = function () {
 };
 
 Loader.prototype.print = function () {
-    try {
-        this.parent.innerHTML = ""
-        this.trakMap.draw(this.parent);
-        window.print();
-        this.parent.innerHTML = "";
-        this.parent.appendChild(this.elem);
-    }
-    catch (err) {
-        Util.allertErr(err);
-        throw err;
-    }
+    this.parent.innerHTML = this.trakMap.elem.outerHTML;
+    window.print();
+    this.parent.innerHTML = "";
+    this.parent.appendChild(this.elem);
 };
 
 

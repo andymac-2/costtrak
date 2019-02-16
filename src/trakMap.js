@@ -1,6 +1,9 @@
 'use strict'
 
-var TrakMap = function (obj, parent) {
+var TrakMap = function (obj) {
+    // View
+    this.elem = Draw.svgElem ("svg", {});
+
     //View model (calculated)
     this.rightMost = 0;
     this.bottom = 0;
@@ -18,7 +21,6 @@ var TrakMap = function (obj, parent) {
 
     /** @type {Unclicker} */ this.unclicker = new Unclicker (this.elem);
     this.restore(obj);
-    this.draw();
 };
 TrakMap.HSPACE = 44;
 TrakMap.MINPRODUCTWIDTH = 250;
@@ -87,20 +89,19 @@ TrakMap.prototype.draw = function (parent) {
     let width = this.getRight() - this.getLeft();
     let height = this.getBottom() - this.getTop();
 
-    let svg = Draw.svgElem ("svg", {
-        "width": "" + width,
-        "viewBox": "" + 
-            this.getLeft() + " " +
-            this.getTop() + " " + 
-            width + " " +
-            height + " "
-    }, parent);
+    this.elem.setAttribute ("width", "" + width);
+    this.elem.setAttribute ("viewBox", "" + 
+        this.getLeft() + " " +
+        this.getTop() + " " + 
+        width + " " +
+        height + " ");
+    parent.appendChild(this.elem);
 
     this.elem.innerHTML = "";
 
-    let connections =  Draw.svgElem("g", {"class": "TMConnections"}, svg);
-    let lines =  Draw.svgElem("g", {"class": "TMProducts"}, svg);
-    let bubbles =  Draw.svgElem("g", {"class": "TMBubbles"}, svg);
+    let connections =  Draw.svgElem("g", {"class": "TMConnections"}, this.elem);
+    let lines =  Draw.svgElem("g", {"class": "TMProducts"}, this.elem);
+    let bubbles =  Draw.svgElem("g", {"class": "TMBubbles"}, this.elem);
 
     this.products.forEach (product => {
         product.drawLine(lines);
@@ -113,7 +114,7 @@ TrakMap.prototype.draw = function (parent) {
         priorityGroup.draw(lines);
     });
 
-    return svg;
+    return this.elem;
 };
 
 TrakMap.prototype.resolveCoordinates = function () {

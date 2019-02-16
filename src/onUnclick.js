@@ -2,7 +2,7 @@
 
 /** @constructor
     @struct */
-var Unclicker = function (elem) {
+let Unclicker = function (elem) {
     this.elem = elem;
     
     this.onceOff = [];
