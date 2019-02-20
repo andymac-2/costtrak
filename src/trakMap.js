@@ -298,7 +298,7 @@ TrakMap.prototype.newDependency = function (dependency, dependent) {
         "dependency": dependency.index,
         "dependentType": dependentType,
         "dependent": dependent.index
-    })
+    });
 };
 TrakMap.prototype.setAllDirections = function (dir) {
     assert (() => dir === Product.GOINGDOWN || dir === Product.GOINGUP);

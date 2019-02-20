@@ -42,7 +42,7 @@ Dependency.prototype.draw = function (parent) {
         "dblclick", () => this.trakMap.deleteDependency(this));
 
     if (this.isSolidLine()){
-        var cls = "priorityLine priority-" + this.getPriority();
+        var cls = this.getLineClass();
         Draw.straightLine(
             this.dependent.getStart(), this.dependency.getEnd(), cls, connections);      
     }
@@ -71,16 +71,16 @@ Dependency.prototype.isSolidLine = function () {
         return this.hasValidDependent();
     }
     assert (() => false);
-}
+};
 
-Dependency.prototype.getPriority = function () {
+Dependency.prototype.getLineClass = function () {
     if (this.trakMap.mode === TrakMap.GREEDYMODE) {
-        return this.dependent.getPriority();
+        return this.dependent.getLineClass();
     }
     if (this.trakMap.mode === TrakMap.LAZYMODE) {
-        return this.dependency.getPriority();
+        return this.dependency.getLineClass();
     }
-}
+};
 
 // Serialisation methods
 Dependency.prototype.restore = function (obj) {

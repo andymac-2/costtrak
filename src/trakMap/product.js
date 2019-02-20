@@ -17,6 +17,8 @@ var Product = function (graph, index, obj) {
     this.level = 0;
     this.direction = Product.GOINGUP;
     this.weight = 0;
+    this.percent;
+    this.health;
     
     // drawing properties
     this.start = {x: 0, y: 0};
@@ -37,12 +39,18 @@ Product.DEFAULTWEIGHT = 7;
 Product.DEFAULTNAME = "New Product";
 Product.DEFAULTCOMMENT = "";
 
+Product.ONTRACK = 1;
+Product.ATRISK = 2;
+Product.LATE = 3;
+
 Product.DEFAULTPRODUCT = {
     "name": Product.DEFAULTNAME,
     "comment": Product.DEFAULTCOMMENT,
     "weight": Product.DEFAULTWEIGHT,
     "priorityGroup": 0,
-    "level" : 0
+    "level" : 0,
+    "health": Product.ONTRACK,
+    "percent": 0
 };
 
 // static functions
@@ -75,6 +83,8 @@ Product.prototype.restore = function (obj) {
     this.name = obj.name;
     this.comment = obj.comment || "";
     this.weight = obj.weight;
+    this.health = obj.health || Product.ONTRACK;
+    this.percent = obj.percent || 0;
     this.priorityGroup = this.trakMap.priorityGroups[obj.priorityGroup];
     this.priorityGroup.addProduct(this);
     
@@ -88,7 +98,9 @@ Product.prototype.save = function () {
         "comment": this.comment,
         "weight": this.weight,
         "priorityGroup": this.priorityGroup.index,
-        "level": this.level
+        "level": this.level,
+        "health": this.health,
+        "percent": this.percent
     };
 };
 Product.prototype.toJSON = Product.prototype.save;
@@ -107,9 +119,8 @@ Product.prototype.drawLine = function (parent) {
     let start = this.getStart();
     let end = this.getEnd();
 
-    var lineClass = "priorityLine priority-" + this.getPriority();
     Draw.svgElem("line", {
-        "class": lineClass,
+        "class": this.getLineClass(),
         "x1": start.x,
         "y1": start.y,
         "x2": end.x,
@@ -204,6 +215,29 @@ Product.prototype.getMinEndX = function () {
 Product.prototype.hasDependencies = function () {
     return this.incoming.length === 0;
 };
+Product.prototype.resolveHealthClass = function () {
+    if (this.percent === 1) {
+        return "complete"
+    }
+    switch (this.health) {
+    case Product.ONTRACK:
+        return "on-track";
+    case Product.ATRISK:
+        return "at-risk";
+    case Product.LATE:
+        return "late";
+    }
+    assert (() => false);
+};
+Product.prototype.getPercentArcAngle = function () {
+    return this.percent * Math.PI * 2;
+};
+Product.prototype.getLineClass = function () {
+    if (this.percent === 1) {
+        return "priorityLine complete";
+    }
+    return "priorityLine priority-" + this.getPriority();
+};
 
 // modification functions
 Product.prototype.resolveYCoord = function () {
@@ -288,7 +322,27 @@ Product.prototype.moveDown = function () {
     this.setDirection (Product.GOINGDOWN);
     this.trakMap.draw();
 };
-
+Product.prototype.incrementPercent = function () {
+    this.percent = this.percent + 0.25;
+    if (this.percent > 1) {
+        this.percent = 0;
+    }
+    this.trakMap.draw();
+};
+Product.prototype.toggleHealth = function () {
+    switch (this.health) {
+    case Product.ONTRACK:
+        this.health = Product.ATRISK;
+        break;
+    case Product.ATRISK:
+        this.health = Product.LATE;
+        break;
+    default:
+        this.health = Product.ONTRACK;
+        break;
+    }
+    this.trakMap.draw();
+};
 // testing
 Product.prototype.checkInvariants = function () {
     assert (() => this.weight > 0);
