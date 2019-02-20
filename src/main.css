@@ -9,7 +9,7 @@ body {
 }
 .comment {
     stroke: none;
-    fill: #a0a0a0;
+    fill: #b8b8b8;
     font-style: italic;
 }
 .flex-container {
@@ -59,10 +59,27 @@ body {
     fill: white;
     stroke: black;
 }
-
 .dateBubble text, .milestone text {
     font-size: xx-small;
 }
+.dateBubble .percentArc {
+    stroke: black;
+    stroke-width: 4;
+    fill: none;
+}
+.dateBubble .dateBubbleCircle.complete
+.dateBubble .dateBubbleCircle.on-track {
+    fill: white;
+}
+.dateBubble .dateBubbleCircle.at-risk {
+    fill:#ffffaa;
+}
+.dateBubble .dateBubbleCircle.late {
+    fill: #ffaaaa;
+}
+/* .dateBubble .complete {
+    fill: #aaffaa
+} */
 /* milestones */
 .svgDateBox {
     width: 90%
@@ -73,6 +90,10 @@ body {
     flex-grow: 4;
     flex-shrink: 4;
     width: 1px;
+}
+.productName.complete,
+.dateBubbleText.complete {
+    fill: #b8b8b8
 }
 .productWeight {
     flex-grow: 1;
@@ -95,11 +116,17 @@ body {
 }
 
 /* default */
-.priorityLine{
+.priorityLine {
     stroke: #4D4D4D;
     fill: none;
     stroke-width: 2;
     stroke-linecap: round;
+}
+
+.priorityLine.complete, 
+.dateBubble .percentArc.complete {
+    stroke:  #B8B8B8;
+    stroke-width: 2;
 }
 
 .priorityLine:hover {

@@ -58,7 +58,7 @@ Milestone.prototype.draw = function (parent) {
             "L 0 -" + Milestone.DIAMONDSIZE + " Z"
     }, milestone);
 
-    this.drawDate(milestone);
+    this.drawDate(milestone, "milestoneDate");
 
     // TODO make this work for lazy mode
     if (this.trakMap.mode === TrakMap.GREEDYMODE) {

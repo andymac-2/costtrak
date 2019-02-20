@@ -59,7 +59,7 @@ ProductDesc.prototype.onclick = function (parent) {
     }, foreign)
 
     let titleBox = Draw.htmlElem ("input", {
-        "class": "productName",
+        "class": "productName " + this.product.resolveHealthClass(),
         "value": this.title,
         "type": "text",
         "placeholder": "Product Name"
@@ -110,6 +110,7 @@ ProductDesc.prototype.onunclick = function (parent) {
     var dayTitle = Draw.svgElem ("text", {
         "text-anchor": "middle",
         "transform": "translate(0, -10)",
+        "class": "productName " + this.product.resolveHealthClass()
     }, parent);
     dayTitle.textContent = Util.truncate(
         this.title + daystring, ProductDesc.MAXTEXTLENGTH);

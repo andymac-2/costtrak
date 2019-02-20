@@ -52,7 +52,15 @@ Draw.sLine = function (start, end, strength, lnClass, parent) {
             end.x + " " + end.y
     }, parent);
 };
-
+Draw.arcLine = function (x, y, r, theta, lnClass, parent) {
+    return Draw.svgElem ("path", {
+        "class": lnClass,
+        "d": `M ${x} ${y - r} ` +
+            `A ${r} ${r} 0 0 1 ${x + Math.sin(theta/3) * r} ${y - Math.cos(theta/3) * r}` +
+            `A ${r} ${r} 0 0 1 ${x + Math.sin(theta/2) * r} ${y - Math.cos(theta/2) * r}` +
+            `A ${r} ${r} 0 0 1 ${x + Math.sin(theta) * r} ${y - Math.cos(theta) * r}`
+    }, parent);
+};
 Draw.doubleAngledLine = function (start, end, hspace, vspace, lnClass, parent){
 /* Creates an angled line like so:
              end

@@ -5,8 +5,9 @@ var DateBubble = function (trakmap, product) {
     this.trakMap = trakmap;
 };
 
+DateBubble.BUBBLERADIUS = 18;
 DateBubble.prototype.draw = function (parent) {
-    var position = this.getPosition()
+    var position = this.getPosition();
     
     var dateBubble = Draw.svgElem("g", {
         "class": "dateBubble",
@@ -14,10 +15,18 @@ DateBubble.prototype.draw = function (parent) {
     }, parent);
     
     Draw.svgElem ("circle", {
-        "cx": "0", "cy": "0", "r": "18"
+        "cx": "0", "cy": "0", "r": DateBubble.BUBBLERADIUS,
+        "class": "dateBubbleCircle " + this.product.resolveHealthClass()
     }, dateBubble);
+
+    if (this.product.percent !== 0) {
+        let cls = "percentArc " + this.product.getLineClass();
+        Draw.arcLine (0, 0, DateBubble.BUBBLERADIUS, 
+            this.product.getPercentArcAngle(), cls, dateBubble);
+    }
     
-    this.drawDate (dateBubble);
+    this.drawDate (dateBubble, 
+        "dateBubbleText " + this.product.resolveHealthClass());
 
     if (this.trakMap.mode === TrakMap.GREEDYMODE) {
         Draw.menu (Draw.ALIGNCENTER, this.trakMap.unclicker, [{
@@ -35,12 +44,21 @@ DateBubble.prototype.draw = function (parent) {
             "transform": "translate(0, -40)"
         }, dateBubble);
     }
- 
 
+    Draw.menu (Draw.ALIGNCENTER, this.trakMap.unclicker, [{
+        "icon": "icons/percent.svg",
+        "action": () => this.product.incrementPercent()
+    }, {
+        "icon": "icons/health.svg",
+        "action": () => this.product.toggleHealth()
+    }], {
+        "transform": "translate(0, 40)"
+    }, dateBubble);
+ 
     return dateBubble;
 };
 
-DateBubble.prototype.drawDate = function (parent) {
+DateBubble.prototype.drawDate = function (parent, cls) {
     let date = this.getDate();
     let line1 = Util.getYear(date);
     let line2 = Util.getShortMonth(date) + Util.getDate(date);
@@ -48,15 +66,17 @@ DateBubble.prototype.drawDate = function (parent) {
     Draw.svgElem ("text", {
         "x": 0,
         "y": -3,
-        "text-anchor": "middle"
+        "text-anchor": "middle",
+        "class": cls
     }, parent).textContent = line1;
 
     Draw.svgElem ("text", {
         "x": 0,
         "y": 7,
-        "text-anchor": "middle"
+        "text-anchor": "middle",
+        "class": cls
     }, parent).textContent = line2;
-}
+};
 
 //queries
 DateBubble.prototype.getPosition = function () {
@@ -66,7 +86,7 @@ DateBubble.prototype.getPosition = function () {
     else if (this.trakMap.mode === TrakMap.LAZYMODE) {
         return this.product.getStart();
     }
-}
+};
 DateBubble.prototype.getValue = function () {
     if (this.trakMap.mode === TrakMap.GREEDYMODE) {
         return this.product.getEndValue();
@@ -74,10 +94,10 @@ DateBubble.prototype.getValue = function () {
     else if (this.trakMap.mode === TrakMap.LAZYMODE) {
         return this.product.getStartValue();
     }
-}
+};
 DateBubble.prototype.getDate = function () {
     return Util.getDateFromDays(this.getValue());
-}
+};
 
 DateBubble.prototype.createProduct = function () {
     return this.trakMap.addProduct({
@@ -85,7 +105,9 @@ DateBubble.prototype.createProduct = function () {
         "comment": Product.DEFAULTCOMMENT,
         "weight": Product.DEFAULTWEIGHT,
         "priorityGroup": this.product.priorityGroup.index,
-        "level": this.product.level
+        "level": this.product.level,
+        "health": Product.ONTRACK,
+        "percent": 0
     });
 };
 
