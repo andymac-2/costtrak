@@ -6,6 +6,3 @@ window.onload = function () {
 
     let loader = new Loader (app);
 }
-
-
-

@@ -1,8 +1,6 @@
-'use strict'
-
 /** @constructor
     @struct */
-var Loader = function (parent) {
+let Loader = function (parent) {
     //view
     /** @type {Element} */ 
     this.elem = Draw.htmlElem ("div", {
@@ -21,7 +19,7 @@ Loader.prototype.save = function () {
     var string = JSON.stringify(this.trakMap.save(), null, "    ");
     // TODO: trakmap name
     Util.download (this.trakMap.name + ".json", string, "application/json",
-                   this.elem);
+        this.elem);
 };
 
 Loader.prototype.restore = function (string) {
@@ -50,13 +48,13 @@ Loader.prototype.draw = function () {
 
     let priorityGroupSegment = Draw.menuBarSegment("Group", menubar);
     Draw.iconBar([{
-         icon: "icons/plus.svg",
+        icon: "icons/plus.svg",
         action: () => this.trakMap.newPriorityGroup()
     }], {}, priorityGroupSegment.body);
 
     let modeSegment = Draw.menuBarSegment("Mode", menubar);
     Draw.iconBar([{
-         icon: "icons/arrow-two-left-right.svg",
+        icon: "icons/arrow-two-left-right.svg",
         action: () => this.trakMap.toggleMode()
     }], {}, modeSegment.body);
 
@@ -79,7 +77,8 @@ Loader.prototype.draw = function () {
         "class": "menuBarPlaceholder"
     }, this.elem);
 
-    this.trakMap.draw(this.elem);
+    this.trakMap.draw();
+    this.elem.appendChild(this.trakMap.elem);
 };
 
 // user events
@@ -104,14 +103,16 @@ Loader.prototype.loadFile = function () {
 };
 
 Loader.prototype.print = function () {
-    this.parent.innerHTML = this.trakMap.elem.outerHTML;
+    let trakMap = new TrakMap(this.trakMap.save());
+    trakMap.draw();
+    this.parent.innerHTML = trakMap.elem.outerHTML;
     window.print();
     this.parent.innerHTML = "";
     this.parent.appendChild(this.elem);
 };
 
 
-/** @const {string} */ Loader.aboutText = `TrakMap, Version: ` + VERSION + `
+/** @const {string} */ Loader.aboutText = "TrakMap, Version: " + VERSION + `
 
 For help and support, please visit:
 

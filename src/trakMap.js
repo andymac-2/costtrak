@@ -83,7 +83,7 @@ TrakMap.prototype.restore = function (obj) {
     });
 };
 
-TrakMap.prototype.draw = function (parent) {
+TrakMap.prototype.draw = function () {
     this.resolveCoordinates();
 
     let width = this.getRight() - this.getLeft();
@@ -95,9 +95,6 @@ TrakMap.prototype.draw = function (parent) {
         this.getTop() + " " + 
         width + " " +
         height + " ");
-    if (parent) {
-        parent.appendChild(this.elem);
-    }
 
     this.elem.innerHTML = "";
 

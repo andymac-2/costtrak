@@ -7,7 +7,6 @@ var DateBubble = function (trakmap, product) {
 
 DateBubble.prototype.draw = function (parent) {
     var position = this.getPosition()
-    var text = this.getValue();
     
     var dateBubble = Draw.svgElem("g", {
         "class": "dateBubble",
