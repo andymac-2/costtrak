@@ -5,14 +5,17 @@
 Draw.svgDateInput = function (options, date) {
     /** @type {number} */ this.date;
 
-    var alignment = options.alignment;
+    this.alignment = options.alignment;
 
-    switch (alignment) {
+    switch (this.alignment) {
     case Draw.ALIGNLEFT:
         this.anchor = "start";
         break;
     case Draw.ALIGNRIGHT:
         this.anchor = "end"
+        break;
+    case Draw.ALIGNCENTER:
+        this.anchor = "middle"
         break;
     default:
         assert (() => false);
@@ -31,7 +34,8 @@ Draw.svgDateInput = function (options, date) {
     this.restore (date);
     this.draw();
 };
-Draw.svgDateInput.HEIGHTWIDTHRATIO = 10;
+Draw.svgDateInput.HEIGHT = 15;
+Draw.svgDateInput.HEIGHTWIDTHRATIO = 7;
 Draw.svgDateInput.TEXTTOTEXTBOXRATIO = 1.5;
 
 Draw.svgDateInput.prototype.restore = function (date) {
@@ -45,11 +49,22 @@ Draw.svgDateInput.prototype.draw = function () {
 };
 
 Draw.svgDateInput.prototype.onclick = function (parent) {
-    var height = Draw.getElemHeight(parent); 
+    var height = Draw.svgDateInput.HEIGHT;
     parent.innerHTML = "";
 
     var width = height * Draw.svgDateInput.HEIGHTWIDTHRATIO;
-    var x = this.anchor === "start" ? 0 : - width;
+    let x;
+    switch (this.alignment) {
+    case Draw.ALIGNLEFT:
+        x = 0;
+        break;
+    case Draw.ALIGNRIGHT:
+        x = -width;
+        break;
+    case Draw.ALIGNCENTER:
+        x = (-width) / 2
+        break;
+    }
 
     var foreign = Draw.svgElem("foreignObject", {
         "width": width,
@@ -60,33 +75,26 @@ Draw.svgDateInput.prototype.onclick = function (parent) {
 
     var attrs = {
         "class": "svgDateBox",
-        "value": Util.getISODateOnly (this.date),
+        "value": Util.getISODateOnly(Util.getDateFromDays(this.date)),
         "type": "date",
         "required": ""
     };
     if (this.min) {
-        attrs["min"] = Util.getISODateOnly (this.min);
+        attrs["min"] = Util.getISODateOnly(Util.getDateFromDays(this.min));
     }
     if (this.max) {
-        attrs["max"] = Util.getISODateOnly (this.max);
+        attrs["max"] = Util.getISODateOnly(Util.getDateFromDays(this.max));
     }
     
     var dateBox = Draw.htmlElem ("input", attrs, foreign);
-    dateBox.focus();
-    dateBox.select();
     dateBox.addEventListener("blur", this.modifyDate.bind(this, dateBox));
     dateBox.addEventListener("blur", e => this.onchange(e, this));
 };
 
-Draw.svgDateInput.prototype.onunclick = function (parent) {
+Draw.svgDateInput.prototype.onunclick = (parent) => {
     parent.innerHTML = "";
-
-    var normalText = Draw.svgElem ("text", {
-        "text-anchor": this.anchor
-    }, parent);
-    normalText.textContent = Util.getISODateOnly (this.date);
 };
 
 Draw.svgDateInput.prototype.modifyDate = function (elem) {
-    this.date = Util.getDateValueFromInputElem (elem);
+    this.date = Util.getDaysFromInputElem (elem);
 };

@@ -1,5 +1,5 @@
-'use strict'
-var Draw = {
+'use strict';
+let Draw = {
     MENUSPACING: 45,
     ALIGNCENTER: 0,
     ALIGNLEFT: 1,

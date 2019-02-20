@@ -1,5 +1,12 @@
 'use strict'
 
+class CircularDependencyError extends Error {
+    constructor (msg) {
+        super (msg);
+        this.name = "CircularDependencyError";
+    }
+}
+
 /** @interface */
 var WeightedNode = function () {}
 
@@ -31,62 +38,79 @@ var nodeWeightedGraph = {};
 @type {function([WeightedNode]):[WeightedNode]}
 */
 nodeWeightedGraph.topoSort = function (nodes) {
-    var active = [];
-    var result = [];
-
     // find all nodes which have no dependencies, also set all nodes
     // visited to "false"
-    for (var i = 0; i < nodes.length; i++) {
-        nodes[i].visited = false;
-    }
-
-    for (var i = 0; i < nodes.length; i++) {
-        if (this.fulfilledDependencies(nodes[i])) {
-            active.push(nodes[i]);
-        }
-    }
+    nodes.forEach(node => node.visited = false)
+    let active = nodes
+        .filter(node => this.fulfilledDependencies(node))
+        .map(node => {
+            node.visited = true
+            return node;
+        });   
 
     // for each element in the active list, check all of it's
     // dependants. If any of the dependants dependencies have all been
     // fulfilled and it has not been visited yet, add it to the active
     // list.
     
-    for (i = 0; i < active.length; i++) {
-        if (active[i].visited !== true) {
-            result.push(active[i]);
-        }
+    for (var i = 0; i < active.length; i++) {
         active[i].visited = true;
 
-        var outgoing = active[i].outgoing;
-        
-        for (var j = 0; j < outgoing.length; j++) {
-            var dependent = outgoing[j].dependent;
+        active[i].outgoing.forEach (dep => {
+            let dependent = dep.dependent;
             if (this.fulfilledDependencies (dependent) &&
-                 dependent.visited === false)
-            {           
+                dependent.visited === false)
+            {
+                dependent.visited = true;
                 active.push(dependent);
-            }
-        }
+            }    
+        });
     }
 
+    assert (() => active.every(prod => prod instanceof Product));
     // cyclic graph.
-    if (result.length !== nodes.length) {
-        return [];
+    if (nodes.some(node => node.visited === false)) {
+        throw new CircularDependencyError ("Circular dependency detected.");
+    }
+    assert (() => active.length === nodes.length);
+    return active;
+};
+nodeWeightedGraph.topoSortLazy = function (nodes) {
+    nodes.forEach(node => node.visited = false)
+    let active = nodes
+        .filter(node => this.fulfilledDependents(node))
+        .map(node => {
+            node.visited = true
+            return node;
+        });
+    
+    for (var i = 0; i < active.length; i++) {
+        active[i].visited = true;
+
+        active[i].incoming.forEach (dep => {
+            let dependency = dep.dependency;
+            if (this.fulfilledDependents (dependency) &&
+                dependency.visited === false)
+            {
+                dependency.visited = true;
+                active.push(dependency);
+            }    
+        });
     }
 
-    return result;
-};
-nodeWeightedGraph.fulfilledDependencies =  function (node) {
-    for (var i = 0; i < node.incoming.length; i++) {
-        var dependency = node.incoming[i].dependency;
-        
-        if (dependency.priority <= node.priority &&
-            dependency.visited === false)
-        {
-            return false;
-        }
+    assert (() => active.every(prod => prod instanceof Product));
+    if (nodes.some(node => node.visited === false)) {
+        throw new CircularDependencyError ("Circular dependency detected.");
     }
-    return true;
+    assert (() => active.length === nodes.length);
+    return active;
+};
+
+nodeWeightedGraph.fulfilledDependencies = function (node) {
+    return node.incoming.every(dep => dep.isDependencyFulfilled());
+};
+nodeWeightedGraph.fulfilledDependents = function (node) {
+    return node.outgoing.every(dep => dep.isDependentFulfilled());
 };
 
 /** sort nodes by their minimal possible value.
@@ -95,43 +119,50 @@ nodeWeightedGraph.fulfilledDependencies =  function (node) {
 nodeWeightedGraph.greedySort = function (nodes) {
     var topoSorted = this.topoSort (nodes);
 
-    if (topoSorted.length === 0) {
-        return [];
-    }
-
-    for (var i = 0; i < topoSorted.length; i++) {
-        var node = topoSorted [i];
-        var incoming = node.incoming;
-        node.value = 0;
-        
-        for (var j = 0; j < incoming.length; j++) {
-            var dependency = incoming[j].dependency;
-            if (dependency.priority <= node.priority) {                
-                var currentVal = dependency.value + dependency.weight;                
-                node.value = node.value > currentVal ? node.value : currentVal;
+    topoSorted.forEach(node => {
+        node.value = Number.MIN_SAFE_INTEGER;
+        node.incoming.forEach(dep => {
+            if (dep.hasValidDependency()) {                                       
+                node.value = Math.max(node.value, dep.dependency.getEndValue());
             }
-        }
-    }
-
-    var priorities = [];
-
-    // separate by prioritites
-    topoSorted.forEach(product => {
-        var prio = product.priority;
-        if (!priorities[prio]) {
-            priorities[prio] = [product];
-        }
-        else {
-            priorities[prio].push(product);
-        }
+        });
     });
 
-    // sort within priorities by value
-    priorities.forEach(productList => {
-        productList.sort(Product.compareByValue);
-    });
+    assert (() => topoSorted.every(node => node instanceof Product));
+    assert (() => topoSorted.every(node => {
+        let max = node.incoming
+            .filter(dep => dep.hasValidDependency())
+            .map(dep => dep.dependency.getEndValue())
+            .reduce((acc, curr) => Math.max (acc, curr))
+        return node.value === max;
+    }));
 
-    return priorities;
+    return topoSorted.sort(Product.compare);
+};
+nodeWeightedGraph.lazySort = function (nodes) {
+    var topoSorted = this.topoSortLazy (nodes);
+
+    topoSorted.forEach(node => {
+        node.value = Number.MAX_SAFE_INTEGER;
+        node.outgoing.forEach(dep => {
+            if (dep.hasValidDependent()) {                                       
+                node.value = Math.min(
+                    node.value, dep.dependent.getStartValue() - node.weight);
+            }
+        });
+    });
+    // long assertion here, this does not modify node.value, just checks that it
+    // is correct
+    assert (() => topoSorted.every(node => node instanceof Product));
+    assert (() => topoSorted.every(node => {
+        let min = node.outgoing
+            .filter(dep => dep.hasValidDependent())
+            .map(dep => dep.dependent.getStartValue())
+            .reduce((acc, curr) => Math.min (acc, curr))
+        return node.value === min - node.weight;
+    }));
+
+    return topoSorted.sort(Product.compare);
 };
 
 
@@ -148,7 +179,7 @@ var nWGTest = function (nodes) {
         for (var j = 0; j < incoming.length; j++) {
             var testvalue = incoming[j].dependency.value +
                 incoming[j].dependency.weight;
-            if (node.priority <= incoming[j].dependency.priority) {
+            if (node.getPriority() <= incoming[j].dependency.getPriority()) {
                 maxvalue = testvalue > maxvalue ? testvalue : maxvalue;
             }
         }
@@ -163,47 +194,53 @@ var nWGTests = function () {
         
         "Single object": nWGTest.bind(null, new TrakMap ({
             products: [
-                {name: "one", weight: 2, priority: 0}
+                {name: "one", weight: 2, priorityGroup: 0}
             ],
             dependencies: [],
             start: 0,
-            prioritiesList: [0]
+            priorityGroups: [
+                {name: "Group1", priority: 0}
+            ]
         }).products),
         
         "Single dependency": nWGTest.bind(null, new TrakMap ({
             products: [
-                {name: "one", weight: 2, priority: 0},
-                {name: "two", weight: 2, priority: 0}
+                {name: "one", weight: 2, priorityGroup: 0},
+                {name: "two", weight: 2, priorityGroup: 0}
             ],
             dependencies: [
                 {dependency: 0, dependent: 1}
             ],
             start: 0,
-            prioritiesList: [0]
+            priorityGroups: [
+                {name: "Group1", priority: 0}
+            ]
         }).products),
         
         "Circular dependency": nWGTest.bind(null, new TrakMap ({
             products: [
-                {name: "one", weight: 2, priority: 0},
-                {name: "two", weight: 2, priority: 0}
+                {name: "one", weight: 2, priorityGroup: 0},
+                {name: "two", weight: 2, priorityGroup: 0}
             ],
             dependencies: [
                 //   {dependency: 0, dependent: 1},
                 {dependency: 1, dependent: 0}
             ],
             start: 0,
-            prioritiesList: [0]
+            priorityGroups: [
+                {name: "Group1", priority: 0}
+            ]
         }).products),
 
         "Complicated dependencies": nWGTest.bind(null, new TrakMap ({
             products: [
-                {name: "one", weight: 4, priority: 0},
-                {name: "two", weight: 30, priority: 0},
-                {name: "three", weight: 3, priority: 0},
-                {name: "four", weight: 30, priority: 0},
-                {name: "five", weight: 8, priority: 0},
-                {name: "six", weight: 3, priority: 0},
-                {name: "seven", weight: 3, priority: 0}
+                {name: "one", weight: 4, priorityGroup: 0},
+                {name: "two", weight: 30, priorityGroup: 0},
+                {name: "three", weight: 3, priorityGroup: 0},
+                {name: "four", weight: 30, priorityGroup: 0},
+                {name: "five", weight: 8, priorityGroup: 0},
+                {name: "six", weight: 3, priorityGroup: 0},
+                {name: "seven", weight: 3, priorityGroup: 0}
             ],
             dependencies: [
                 {dependency: 0, dependent: 1},
@@ -220,7 +257,9 @@ var nWGTests = function () {
                 {dependency: 6, dependent: 4}
             ],
             start: 0,
-            prioritiesList: [0]
+            priorityGroups: [
+                {name: "Group1", priority: 0}
+            ]
         }).products)
     });
 }

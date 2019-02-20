@@ -3,34 +3,90 @@ body {
     font-size: small;
 }
 
-.foxedPaneTableVScrollDiv {
-    position: relative;
+/* generic */
+.scrollBox {
+    overflow: auto;
+}
+.comment {
+    stroke: none;
+    fill: #a0a0a0;
+    font-style: italic;
+}
+.flex-container {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0px;  
 }
 
-.fixedPaneTableHScrollDiv {
-    overflow-x: scroll;
+/* menu bar */
+.menubar {
+    padding: 0px;   
+    display: flex;
+    position: fixed;
+    flex-wrap: wrap;
+}
+.menuBarPlaceholder {
+    height: 65px;
+}
+.menuBarSegment {
+    border: 1px solid #888;
+    background-color: #f4f4f4;
+    border-radius: 3px;
+    margin: 2px;
+    padding: 2px;
+    
+    height: 55px;
+    overflow: hidden;
+    display: inline-block;
+}
+.menuBarHeader {
+    color: #444;
+    font-size: small;    
+}
+.menuBarContent {
+    text-align: center;
+    color: #444;
+    font-size: small;
+}
+.menuBarContent span {
+    display: inline-block;
+    height: 45px;
+    overflow: hidden;
 }
 
-.fixedPaneTableTable {
-    table-layout: fixed;
-}
-
-.fixedPaneRowHeadingCell {
-    position: absolute;
-}
-
-.dateBubble ellipse{
+/* date bubbles */
+.dateBubble circle, .milestone path{
     fill: white;
     stroke: black;
 }
 
-.dateBubble text {
+.dateBubble text, .milestone text {
     font-size: xx-small;
 }
+/* milestones */
+.svgDateBox {
+    width: 90%
+}
 
-/* priority level pallette */
-
-/* menus */
+/* Products */
+.productName {
+    flex-grow: 4;
+    flex-shrink: 4;
+    width: 1px;
+}
+.productWeight {
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: 1px;
+}
+.productComment {
+    flex-grow: 4;
+    width: 1px;
+}
+.productPriorityGroup {
+    flex-grow: 1;
+    width: 1px;
+}
 
 /* Menus */
 .menuEntry circle{
@@ -41,46 +97,55 @@ body {
 /* default */
 .priorityLine{
     stroke: #4D4D4D;
-    fill: #4D4D4D;
+    fill: none;
     stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.priorityLine:hover {
+    stroke-width: 6;
+}
+.priorityLine.slack:hover {
+    stroke-width: 4;
 }
 
 .priorityLine.priority-0 {
     stroke: #F15854;
-    fill: #F15854;
 }
 .priorityLine.priority-1 {
     stroke: #5DA5DA;
-    fill: #5DA5DA;
 }
 .priorityLine.priority-2 {
     stroke: #FAA43A;
-    fill: #FAA43A;
 }
 .priorityLine.priority-3 {
     stroke: #60BD68;
-    fill: #60BD68;
 }
 .priorityLine.priority-4 {
     stroke: #F17CB0;
-    fill: #F17CB0;
 }
 .priorityLine.priority-5 {
     stroke: #B2912F;
-    fill: #B2912F;
 }
 .priorityLine.priority-6 {
     stroke: #B276B2;
-    fill: #B276B2;
 }
 .priorityLine.priority-7 {
     stroke: #DECF3F;
-    fill: #DECF3F;
 }
 .priorityLine.slack {
-    stroke: #b0b0b0;
+    stroke: #b8b8b8;
     stroke-dasharray: 5,5;
     stroke-width: 1;
+}
+
+
+/* priority groups */
+.priorityGroupBox {
+    stroke: #b8b8b8;
+    stroke-dasharray: 1,4;
+    stroke-width: 1;
+    fill: none;
 }
 
 .hidden {

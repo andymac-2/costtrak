@@ -7,13 +7,14 @@ var ProductDesc = function (options, title, days, comment, priority) {
     // state
     /** @type {string} */ this.title;
     /** @type {string} */ this.comment;
-    /** @type {number} */ this.length;
-    /** @type {number} */ this.priority;
+    /** @type {number} */ this.days;
+    /** @type {number} */ this.priorityGroup;
 
     // view model
     /** @type {Unclicker} */ this.unclicker = options.unclicker;
     /** @type {function(ProductDesc)} */ this.onChange = options.onChange || (() => {});
     /** @type {Object} */ this.attrs = options.attrs || {};
+    this.product = options.product;
 
     /** @type {boolean} */ this.modified = false;
 
@@ -23,15 +24,15 @@ ProductDesc.HEIGHT = 35;
 ProductDesc.TEXTBOXHEIGHT = 45;
 ProductDesc.YOFFSET = 55;
 ProductDesc.XOFFSET = 5;
-ProductDesc.HEIGHTWIDTHRATIO = 7;
+ProductDesc.HEIGHTWIDTHRATIO = 4;
 ProductDesc.MAXTEXTLENGTH = 100;
-ProductDesc.prototype.restore = function (title, days, comment, priority) {
+ProductDesc.prototype.restore = function (title, days, comment, priorityGroup) {
     this.title = title;
     this.title = this.title === "" ? "Untitled": this.title;
     this.days = days;
     this.comment = comment;
     this.comment = this.comment === "" ? "" : this.comment;
-    this.priority = priority;
+    this.priorityGroup = priorityGroup;
 };
 
 ProductDesc.prototype.draw = function (parent) {
@@ -41,35 +42,37 @@ ProductDesc.prototype.draw = function (parent) {
 };
 
 ProductDesc.prototype.onclick = function (parent) {
-    var height = ProductDesc.TEXTBOXHEIGHT;
+    let height = ProductDesc.TEXTBOXHEIGHT;
     parent.innerHTML = "";
     
-    var width = height * ProductDesc.HEIGHTWIDTHRATIO;
+    let width = height * ProductDesc.HEIGHTWIDTHRATIO;
     
-    var foreign = Draw.svgElem("foreignObject", {
+    let foreign = Draw.svgElem("foreignObject", {
+        "class": "flex-container",
         "width": width,
         "height": (height),
         "x": -(width / 2),
         "y": -25
     }, parent);
+    let div = Draw.htmlElem ("div", {
+        "class": "flex-container",
+    }, foreign)
 
-    var titleBox = Draw.htmlElem ("input", {
-        "class": "svgTextBox",
+    let titleBox = Draw.htmlElem ("input", {
+        "class": "productName",
         "value": this.title,
         "type": "text",
         "placeholder": "Product Name"
-    }, foreign);
-    
+    }, div);    
     titleBox.addEventListener("change", () => this.modifyTitle(titleBox));
 
-    var dateBox = Draw.htmlElem ("input", {
-        "class": "numberBox",
+    let weightBox = Draw.htmlElem ("input", {
+        "class": "productWeight",
         "value": this.days,
         "type": "number",
         "required": ""
-    }, foreign);
-    
-    dateBox.addEventListener("change", () => this.modifyDays(dateBox));
+    }, div);
+    weightBox.addEventListener("change", () => this.modifyDays(weightBox));
 
     foreign = Draw.svgElem("foreignObject", {
         "width": width,
@@ -77,24 +80,22 @@ ProductDesc.prototype.onclick = function (parent) {
         "x": -(width / 2),
         "y": 5
     }, parent);
+    div = Draw.htmlElem ("div", {
+        "class": "flex-container",
+    }, foreign)
 
     var commentBox = Draw.htmlElem ("input", {
-        "class": "svgCommentBox",
+        "class": "productComment comment",
         "value": this.comment,
         "type": "text",
         "placeholder": "Product Comment"
-    }, foreign);
-
+    }, div);
     commentBox.addEventListener("change", () => this.modifyComment(commentBox));
 
-    var priorityBox = Draw.htmlElem ("input", {
-        "class": "numberBox",
-        "value": this.priority,
-        "type": "number",
-        "required": ""
-    }, foreign);
-
-    priorityBox.addEventListener("change", () => this.modifyPriority(priorityBox));
+    let priorityGroupBox = this.product.trakMap.drawPriorityGroupSelector (
+        pg => this.modifyPriority(pg),
+        { "class": "productPriorityGroup" },
+        div);
 };
 
 ProductDesc.prototype.onunclick = function (parent) {
@@ -114,7 +115,7 @@ ProductDesc.prototype.onunclick = function (parent) {
         this.title + daystring, ProductDesc.MAXTEXTLENGTH);
 
     var comment = Draw.svgElem ("text", {
-        "class": "msComment",
+        "class": "productComment comment",
         "text-anchor": "middle",
         "transform": "translate(0, 15)"
     }, parent);
@@ -123,21 +124,21 @@ ProductDesc.prototype.onunclick = function (parent) {
 
 // user events
 ProductDesc.prototype.modifyTitle = function (elem) {
-    this.restore(elem.value, this.days, this.comment, this.priority);
+    this.restore(elem.value, this.days, this.comment, this.priorityGroup);
     this.modified = true;
 };
 
 ProductDesc.prototype.modifyComment = function (elem) {
-    this.restore(this.title, this.days, elem.value, this.priority);
+    this.restore(this.title, this.days, elem.value, this.priorityGroup);
     this.modified = true;
 };
 
 ProductDesc.prototype.modifyDays = function (elem) {
-    this.restore(this.title, elem.value, this.comment, this.priority);
+    this.restore(this.title, elem.value, this.comment, this.priorityGroup);
     this.modified = true;
 };
 
-ProductDesc.prototype.modifyPriority = function (elem) {
-    this.restore(this.title, this.days, this.comment, elem.value);
+ProductDesc.prototype.modifyPriority = function (pg) {
+    this.restore(this.title, this.days, this.comment, pg);
     this.modified = true;
 };
