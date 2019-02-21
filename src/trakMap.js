@@ -28,12 +28,13 @@ TrakMap.UNITVALUEWIDTH = 3;
 TrakMap.VSPACE = 70;
 TrakMap.PRIORITYSPACE = 130;
 TrakMap.MARGIN = 30;
-TrakMap.PAGEMARGIN = 40;
+TrakMap.TITLEHEIGHT = 20;
 
 TrakMap.LAZYMODE = 0;
 TrakMap.GREEDYMODE = 1;
 
 TrakMap.NEWFILE = {
+    "title": "New TrakMap",
     "products" : [
         Product.DEFAULTPRODUCT
     ],
@@ -47,10 +48,11 @@ TrakMap.NEWFILE = {
     "priorityGroups": [
         PriorityGroup.DEFAULTPRIORITYGROUP
     ]
-}
+};
 
 TrakMap.prototype.save = function () {
     return {
+        "title": this.title,
         "mode": this.mode,
         "priorityGroups": this.priorityGroups,
         "products": this.products.map(product => product.save()),
@@ -60,25 +62,26 @@ TrakMap.prototype.save = function () {
 };
 
 TrakMap.prototype.restore = function (obj) {
-    this.mode = obj.mode;
+    this.title = obj["title"] || "Untitled";
+    this.mode = obj["mode"];
 
     this.priorityGroups = [];
-    obj.priorityGroups.forEach ((priorityGroup, i) => {
+    obj["priorityGroups"].forEach ((priorityGroup, i) => {
         this.priorityGroups.push(new PriorityGroup (this, i, priorityGroup));
     });
 
     this.milestones = [];
-    obj.milestones.forEach((milestone, i) => {
+    obj["milestones"].forEach((milestone, i) => {
         this.milestones.push(new Milestone (this, i, milestone));
-    })
+    });
 
     this.products = [];
-    obj.products.forEach((product, i) => {
+    obj["products"].forEach((product, i) => {
         this.products.push(new Product (this, i, product));
     });
 
     this.dependencies = [];
-    obj.dependencies.forEach((dependency, i) => {
+    obj["dependencies"].forEach((dependency, i) => {
         this.dependencies.push(new Dependency (this, i, dependency));
     });
 };
@@ -88,6 +91,7 @@ TrakMap.prototype.draw = function () {
 
     let width = this.getRight() - this.getLeft();
     let height = this.getBottom() - this.getTop();
+    let centre = (this.getRight() + this.getLeft()) / 2;
 
     this.elem.setAttribute ("width", "" + width);
     this.elem.setAttribute ("viewBox", "" + 
@@ -97,6 +101,15 @@ TrakMap.prototype.draw = function () {
         height + " ");
 
     this.elem.innerHTML = "";
+
+    let g = Draw.svgElem("g", {}, this.elem);
+    new Draw.svgTextInput (this.title, Draw.ALIGNCENTER, this.unclicker, 
+        (e, inputBox) => this.modifyTitle(inputBox.text), 
+        {
+            "class": "trakMapTitle",
+            "transform": "translate(" 
+                + centre + " " + (this.getTop() + 40) + ")"
+        }, g, "Untitled");
 
     let connections =  Draw.svgElem("g", {"class": "TMConnections"}, this.elem);
     let lines =  Draw.svgElem("g", {"class": "TMProducts"}, this.elem);
@@ -224,7 +237,7 @@ TrakMap.prototype.greedyResolve = function () {
 TrakMap.prototype.resolvePriorityGroupOffsets = function () {
     this.priorityGroups.length;
     
-    let boundary = TrakMap.MARGIN;
+    let boundary = TrakMap.MARGIN + TrakMap.TITLEHEIGHT;
     this.priorityGroups.forEach (priorityGroup => {
         priorityGroup.yOffset = boundary - priorityGroup.minLevel * TrakMap.VSPACE;
         
@@ -257,14 +270,21 @@ TrakMap.prototype.getTop = function () {
 TrakMap.prototype.getLeft = function () {
     return -PriorityGroup.LEFTMARGIN - TrakMap.MARGIN;
 };
+
+// minimum width to dosplay most titles
+TrakMap.MINIMUMWIDTH = 700;
 TrakMap.prototype.getRight = function () {
-    return this.rightMost + PriorityGroup.LEFTMARGIN + TrakMap.MARGIN;
+    let min = this.rightMost + PriorityGroup.LEFTMARGIN + TrakMap.MARGIN;
+    return Math.max(min, TrakMap.MINIMUMWIDTH);
 };
 TrakMap.prototype.getBottom = function () {
     return this.bottom;
 };
 
-// modifictions:
+// modifictions
+TrakMap.prototype.modifyTitle = function (text) {
+    this.title = text;
+};
 TrakMap.prototype.addProduct = function (obj) {
     let product = new Product (this, this.products.length, obj);
     this.products.push(product);

@@ -17,6 +17,9 @@ body {
     flex-wrap: wrap;
     padding: 0px;  
 }
+.svgTextBox {
+    width: 90%;
+}
 
 /* menu bar */
 .menubar {
@@ -52,6 +55,16 @@ body {
     display: inline-block;
     height: 45px;
     overflow: hidden;
+}
+
+/* Title */
+.trakMapTitle foreignObject input {
+    font-size: 1em;
+    font-weight: bold;
+}
+.trakMapTitle{
+    font-size: 2em;
+    font-weight: bold;
 }
 
 /* date bubbles */
