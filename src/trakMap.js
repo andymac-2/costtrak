@@ -14,6 +14,7 @@ var TrakMap = function (obj) {
     this.dependencies = [];
     this.priorityGroups = [];
     this.mode;
+    this.title;
 
     // selections
     this.selection = null;
