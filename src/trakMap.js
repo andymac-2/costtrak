@@ -25,7 +25,7 @@ var TrakMap = function (obj) {
 };
 TrakMap.HSPACE = 44;
 TrakMap.MINPRODUCTWIDTH = 250;
-TrakMap.UNITVALUEWIDTH = 3;
+TrakMap.UNITVALUEWIDTH = 50;
 TrakMap.VSPACE = 70;
 TrakMap.PRIORITYSPACE = 130;
 TrakMap.MARGIN = 30;
@@ -181,8 +181,8 @@ TrakMap.prototype.resolveXValues = function () {
             if (lastValue !== min.getEndValue()) {
                 let oldLast = lastValue;
                 lastValue = min.getEndValue();
-                cursor += TrakMap.HSPACE +
-                    (lastValue - oldLast) * TrakMap.UNITVALUEWIDTH;
+                cursor += TrakMap.HSPACE + 
+                    this.getMinSeparation(lastValue, oldLast);
                 cursor = Math.max(cursor, min.getMinEndX());
             }
             this.rightMost = Math.max(this.rightMost, cursor);
@@ -194,7 +194,7 @@ TrakMap.prototype.resolveXValues = function () {
             let oldLast = lastValue;
             lastValue = product.getStartValue();
             cursor += TrakMap.HSPACE +
-                (lastValue - oldLast) * TrakMap.UNITVALUEWIDTH;
+                this.getMinSeparation(lastValue, oldLast);
         }
         product.setStartX(cursor);
         heap.add(product);
@@ -205,7 +205,7 @@ TrakMap.prototype.resolveXValues = function () {
             let oldLast = lastValue;
             lastValue = min.getEndValue();
             cursor += TrakMap.HSPACE +
-                (lastValue - oldLast) * TrakMap.UNITVALUEWIDTH;
+                this.getMinSeparation(lastValue, oldLast);
             cursor = Math.max(cursor, min.getMinEndX());
         }
         this.rightMost = Math.max(this.rightMost, cursor);
@@ -270,6 +270,9 @@ TrakMap.prototype.getTop = function () {
 };
 TrakMap.prototype.getLeft = function () {
     return -PriorityGroup.LEFTMARGIN - TrakMap.MARGIN;
+};
+TrakMap.prototype.getMinSeparation = function (val1, val2) {
+    return Math.log2(Math.abs(val1 - val2)) * TrakMap.UNITVALUEWIDTH;
 };
 
 // minimum width to dosplay most titles

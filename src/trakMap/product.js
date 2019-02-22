@@ -207,7 +207,8 @@ Product.prototype.getEnd = function () {
     }
 };
 Product.prototype.getWidth = function () {
-    return TrakMap.MINPRODUCTWIDTH + (TrakMap.UNITVALUEWIDTH * this.weight);
+    return TrakMap.MINPRODUCTWIDTH + 
+        this.trakMap.getMinSeparation(0, this.weight);
 };
 Product.prototype.getMinEndX = function () {
     return this.start.x + this.getWidth();
