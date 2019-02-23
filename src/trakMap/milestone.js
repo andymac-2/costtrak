@@ -51,6 +51,10 @@ Milestone.prototype.draw = function (parent) {
         "transform": "translate(" + this.position.x + ", " + this.position.y + ")"
     }, parent);
 
+    milestone.addEventListener("click", () => {
+        this.trakMap.select (TrakMap.SELNORMAL, this);
+    });
+
     Draw.svgElem("path", {
         "d" : "M -" +  Milestone.DIAMONDSIZE + " 0" +
             "L 0 " +  Milestone.DIAMONDSIZE +

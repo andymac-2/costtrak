@@ -449,7 +449,7 @@ TrakMap.prototype.select = function (type, obj) {
              obj !== this.selection)
     {
         assert (() => this.selection instanceof Product);
-        assert (() => obj instanceof Product);
+        assert (() => obj instanceof Product || obj instanceof Milestone);
         
         this.makeSafeModification(
             () => this.newDependency (this.selection, obj));
@@ -462,7 +462,7 @@ TrakMap.prototype.select = function (type, obj) {
              obj !== this.selection)
     {
         assert (() => this.selection instanceof Product);
-        assert (() => obj instanceof Product);
+        assert (() => obj instanceof Product || obj instanceof Milestone);
 
         this.makeSafeModification(
             () => this.newDependency (obj, this.selection));
