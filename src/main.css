@@ -21,6 +21,12 @@ body {
     width: 90%;
 }
 
+/* Page */
+.trakMapPage { 
+    width: 100%;
+    height: auto;
+}
+
 /* menu bar */
 .menubar {
     padding: 0px;   

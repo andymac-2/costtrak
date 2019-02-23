@@ -106,7 +106,8 @@ Loader.prototype.print = function () {
     let trakMap = new TrakMap(this.trakMap.save());
     trakMap.draw();
     this.parent.innerHTML = trakMap.elem.outerHTML;
-    window.print();
+    this.parent.children[0].setAttribute("class", "trakMapPage");
+    window.print(); 
     this.parent.innerHTML = "";
     this.parent.appendChild(this.elem);
 };
