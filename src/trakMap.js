@@ -17,8 +17,8 @@ var TrakMap = function (obj) {
     this.title;
 
     // selections
-    this.selection = null;
-    this.selType = TrakMap.SELNOTHING;
+    this.selection;
+    this.selType;
 
     /** @type {Unclicker} */ this.unclicker = new Unclicker (this.elem);
     this.restore(obj);
@@ -63,8 +63,11 @@ TrakMap.prototype.save = function () {
 };
 
 TrakMap.prototype.restore = function (obj) {
-    this.title = obj["title"] || "Untitled";
+    this.title = obj["title"].toString() || "Untitled";
     this.mode = obj["mode"];
+    if (this.mode !== TrakMap.GREEDYMODE && this.mode !== TrakMap.LAZYMODE) {
+        throw new FileValidationError("Invalid TrakMap mode.");
+    }
 
     this.priorityGroups = [];
     obj["priorityGroups"].forEach ((priorityGroup, i) => {
@@ -85,6 +88,9 @@ TrakMap.prototype.restore = function (obj) {
     obj["dependencies"].forEach((dependency, i) => {
         this.dependencies.push(new Dependency (this, i, dependency));
     });
+
+    this.selection = null;
+    this.selType = TrakMap.SELNOTHING;
 };
 
 TrakMap.prototype.draw = function () {
@@ -353,9 +359,8 @@ TrakMap.prototype.deleteMilestoneUnsafe = function (milestone) {
 // special utilities
 TrakMap.prototype.makeSafeModification = function (func) {
     let backup = this.save();
-    func();
-
     try {
+        func();
         this.draw();
     }
     catch (e) {

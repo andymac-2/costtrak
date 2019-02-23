@@ -25,18 +25,21 @@ PriorityGroup.DEFAULTPRIORITYGROUP = {
 };
 // serialisation
 PriorityGroup.prototype.restore = function (obj) {
-    assert (() => obj.priority >= 0);
-    
-    this.name = obj.name || "";
-    this.comment = obj.comment || "";
-    this.priority = obj.priority;
+    this.name = obj["name"].toString();
+    this.comment = obj["comment"].toString();
+    this.priority = obj["priority"] | 0;
+
+    if (this.priority < 0) {
+        throw new FileValidationError (
+            "Product group \"" + this.name + "\", has an invalid priority");
+    }
 };
 PriorityGroup.prototype.save = function () {
     return {
         "name": this.name,
         "comment": this.comment,
         "priority": this.priority
-    }
+    };
 };
 PriorityGroup.prototype.toJSON = PriorityGroup.prototype.save;
 

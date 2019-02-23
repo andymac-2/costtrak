@@ -84,28 +84,37 @@ Dependency.prototype.getLineClass = function () {
 
 // Serialisation methods
 Dependency.prototype.restore = function (obj) {
-    if (obj.dependencyType === Dependency.PRODUCT) {
-        this.dependency = this.trakMap.products[obj.dependency];
+    // paranoia check if file has weird values for dependencyType.
+    this.dependencyType = obj["dependencyType"] ? 1 : 0;
+    if (this.dependencyType === Dependency.PRODUCT) {
+        this.dependency = this.trakMap.products[obj["dependency"]];
     }
-    else if (obj.dependencyType === Dependency.MILESTONE) {
-        this.dependency = this.trakMap.milestones[obj.dependency];
+    else if (this.dependencyType === Dependency.MILESTONE) {
+        this.dependency = this.trakMap.milestones[obj["dependency"]];
     }
     else {
         assert (() => false);
     }
-    this.dependencyType = obj.dependencyType;
+
+    if (!this.dependency) {
+        throw new FileValidationError ("Dependency has invalid dependency index");
+    }
     this.dependency.addDependent(this);
 
-    if (obj.dependentType === Dependency.PRODUCT) {
-        this.dependent = this.trakMap.products[obj.dependent];
+    this.dependentType = obj["dependentType"] ? 1 : 0;
+    if (this.dependentType === Dependency.PRODUCT) {
+        this.dependent = this.trakMap.products[obj["dependent"]];
     }
-    else if (obj.dependentType === Dependency.MILESTONE) {
-        this.dependent = this.trakMap.milestones[obj.dependent];
+    else if (this.dependentType === Dependency.MILESTONE) {
+        this.dependent = this.trakMap.milestones[obj["dependent"]];
     }
     else {
         assert (() => false);
     }
-    this.dependentType = obj.dependentType;
+
+    if (!this.dependent) {
+        throw new FileValidationError ("Dependency has invalid dependent index");
+    }
     this.dependent.addDependency(this);
 };
 Dependency.prototype.save = function () {

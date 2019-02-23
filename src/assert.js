@@ -7,11 +7,18 @@ class AssertionError extends Error {
     }
 }
 
+class FileValidationError extends Error {
+    constructor (msg) {
+        super ("Invalid file: " + msg);
+        this.name = "FileValidationError";
+    }
+}
+
 /** @define {boolean} */
-var NDEBUG = false;
+let NDEBUG = false;
 
 // runtime check, check for user errors.
-var runTAssert = function (test) {
+let runTAssert = function (test) {
     if (test()) {
         return;
     }

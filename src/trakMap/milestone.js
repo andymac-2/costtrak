@@ -1,8 +1,6 @@
-'use strict'
-
+"use strict";
 // The milestone has some similarities to the interface of product,
 // since it can behave as a dependent or dependency
-
 var Milestone = function (trakMap, index, obj) {
     this.incoming = [];
     this.outgoing = [];
@@ -27,10 +25,14 @@ Milestone.DEFAULTMILESTONE = {
 
 // save and restore
 Milestone.prototype.restore = function (obj) {
-    this.value = obj.value;
-    this.priorityGroup = this.trakMap.priorityGroups[obj.priorityGroup];
+    this.value = obj["value"] | 0;
+    this.level = obj["level"] | 0;
+
+    this.priorityGroup = this.trakMap.priorityGroups[obj["priorityGroup"]];
+    if (!this.priorityGroup) {
+        throw new FileValidationError ("Milestone has invalid product group index");
+    }
     this.priorityGroup.addMilestone(this);
-    this.level = obj.level;
 };
 Milestone.prototype.save = function () {
     assert (() => this.trakMap.priorityGroups[this.priorityGroup.index] ===

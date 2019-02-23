@@ -80,27 +80,41 @@ Product.compareEnds = function (a, b) {
 };
 
 Product.prototype.restore = function (obj) {
-    this.name = obj.name;
-    this.comment = obj.comment || "";
-    this.weight = obj.weight;
-    this.health = obj.health || Product.ONTRACK;
-    this.percent = obj.percent || 0;
-    this.priorityGroup = this.trakMap.priorityGroups[obj.priorityGroup];
-    this.priorityGroup.addProduct(this);
-    
-    this.level = obj.level | 0;
+    this.name = obj["name"].toString();
+    this.comment = obj["comment"].toString() || "";
+    this.level = obj["level"] | 0;
 
-    assert (() => this.weight > 0);
+    this.weight = obj["weight"] | 7;
+    if (this.weight <= 1) {
+        throw new FileValidationError ("Product \"" + this.name + 
+            "\" has an invalid weight. Weight must be positive");
+    }
+
+    this.health = obj["health"] || Product.ONTRACK;
+    if (this.health !== Product.ATRISK && this.health !== Product.LATE) {
+        this.health = Product.ONTRACK;
+    }
+
+    this.percent = obj["percent"] || 0;
+    this.percent = Math.max(0, this.percent);
+    this.percent = Math.min(1, this.percent);
+
+    this.priorityGroup = this.trakMap.priorityGroups[obj["priorityGroup"]];
+    if (!this.priorityGroup) {
+        throw new FileValidationError ("Product \"" + this.name + 
+            "\" has an invalid product group index.");
+    }
+    this.priorityGroup.addProduct(this);
 };
 Product.prototype.save = function () {
     return {
         "name": this.name,
         "comment": this.comment,
-        "weight": this.weight,
-        "priorityGroup": this.priorityGroup.index,
         "level": this.level,
+        "weight": this.weight,
         "health": this.health,
-        "percent": this.percent
+        "percent": this.percent,
+        "priorityGroup": this.priorityGroup.index
     };
 };
 Product.prototype.toJSON = Product.prototype.save;

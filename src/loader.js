@@ -22,9 +22,12 @@ Loader.prototype.save = function () {
         this.elem);
 };
 
-Loader.prototype.restore = function (string) {
+Loader.prototype.restoreUnsafe = function (string) {
     var obj = JSON.parse(string);
-    this.trakMap = new TrakMap(obj);
+    this.trakMap.restore(obj);
+};
+Loader.prototype.restore = function (string) {
+    this.trakMap.makeSafeModification(() => this.restoreUnsafe(string));
 };
 
 Loader.prototype.draw = function () {
@@ -88,18 +91,7 @@ Loader.prototype.newFile = function () {
 };
 
 Loader.prototype.loadFile = function () {
-    var restoreDraw = (string) => {
-        try {
-            this.restore(string);
-            this.draw();
-        }
-        catch (e) {
-            alert ("Error: Invalid file.");
-            throw e;
-        }
-    };
-    
-    Util.upload (this.elem, restoreDraw, ".json");
+    Util.upload (this.elem, (str) => this.restore(str), ".json");
 };
 
 Loader.prototype.print = function () {
