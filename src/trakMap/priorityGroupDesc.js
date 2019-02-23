@@ -121,7 +121,7 @@ PriorityGroupDesc.prototype.modifyComment = function (elem) {
 };
 
 PriorityGroupDesc.prototype.modifyPriority = function (elem) {
-    this.restore(this.title, this.comment, elem.value);
+    this.restore(this.title, this.comment, elem.value | 0);
     this.modified = true;
 };
 

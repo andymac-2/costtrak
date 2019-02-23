@@ -16,7 +16,7 @@ let Loader = function (parent) {
 };
 
 Loader.prototype.save = function () {
-    var string = JSON.stringify(this.trakMap.save(), null, "    ");
+    var string = JSON.stringify(this.trakMap.save(), null, "\t");
     // TODO: trakmap name
     Util.download (this.trakMap.title + ".json", string, "application/json",
         this.elem);

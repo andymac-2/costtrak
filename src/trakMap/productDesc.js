@@ -135,7 +135,7 @@ ProductDesc.prototype.modifyComment = function (elem) {
 };
 
 ProductDesc.prototype.modifyDays = function (elem) {
-    this.restore(this.title, elem.value, this.comment, this.priorityGroup);
+    this.restore(this.title, elem.value | 0, this.comment, this.priorityGroup);
     this.modified = true;
 };
 
