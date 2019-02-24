@@ -1,5 +1,7 @@
-/** @constructor
-    @struct */
+/** 
+ * @constructor
+ * @struct 
+ */
 let Loader = function (parent) {
     //view
     /** @type {Element} */ 
@@ -7,7 +9,7 @@ let Loader = function (parent) {
         "class": "trakMapContainer"
     }, parent);
 
-    /** @type {MilestoneMap} */ this.trakMap;
+    /** @type {TrakMap} */ this.trakMap;
     /** @type {Element} */ this.parent = parent;
 
     // Util.throttleEvent (window, "resize", this.draw.bind(this), 100);
@@ -16,15 +18,18 @@ let Loader = function (parent) {
 };
 
 Loader.prototype.save = function () {
-    var string = JSON.stringify(this.trakMap.save(), null, "    ");
+    var string = JSON.stringify(this.trakMap.save(), null, "\t");
     // TODO: trakmap name
-    Util.download (this.trakMap.name + ".json", string, "application/json",
+    Util.download (this.trakMap.title + ".json", string, "application/json",
         this.elem);
 };
 
-Loader.prototype.restore = function (string) {
+Loader.prototype.restoreUnsafe = function (string) {
     var obj = JSON.parse(string);
-    this.trakMap = new TrakMap(obj);
+    this.trakMap.restore(obj);
+};
+Loader.prototype.restore = function (string) {
+    this.trakMap.makeSafeModification(() => this.restoreUnsafe(string));
 };
 
 Loader.prototype.draw = function () {
@@ -88,25 +93,15 @@ Loader.prototype.newFile = function () {
 };
 
 Loader.prototype.loadFile = function () {
-    var restoreDraw = (string) => {
-        try {
-            this.restore(string);
-            this.draw();
-        }
-        catch (e) {
-            alert ("Error: Invalid file.");
-            throw e;
-        }
-    };
-    
-    Util.upload (this.elem, restoreDraw, ".json");
+    Util.upload (this.elem, (str) => this.restore(str), ".json");
 };
 
 Loader.prototype.print = function () {
     let trakMap = new TrakMap(this.trakMap.save());
     trakMap.draw();
     this.parent.innerHTML = trakMap.elem.outerHTML;
-    window.print();
+    this.parent.children[0].setAttribute("class", "trakMapPage");
+    window.print(); 
     this.parent.innerHTML = "";
     this.parent.appendChild(this.elem);
 };

@@ -1,8 +1,12 @@
 'use strict'
 
+/**
+ * @constructor
+ * @struct
+ */
 var DateBubble = function (trakmap, product) {
-    this.product = product;
-    this.trakMap = trakmap;
+    /** @type {Product} */ this.product = product;
+    /** @type {TrakMap} */ this.trakMap = trakmap;
 };
 
 DateBubble.BUBBLERADIUS = 18;
@@ -58,6 +62,11 @@ DateBubble.prototype.draw = function (parent) {
     return dateBubble;
 };
 
+/** 
+ * @this {DateBubble|Milestone}
+ * @param {Element} parent
+ * @param {string} cls
+ */
 DateBubble.prototype.drawDate = function (parent, cls) {
     let date = this.getDate();
     let line1 = Util.getYear(date);
@@ -95,6 +104,7 @@ DateBubble.prototype.getValue = function () {
         return this.product.getStartValue();
     }
 };
+/** @this {DateBubble|Milestone} */ 
 DateBubble.prototype.getDate = function () {
     return Util.getDateFromDays(this.getValue());
 };

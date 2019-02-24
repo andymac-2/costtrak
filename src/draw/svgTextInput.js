@@ -33,9 +33,9 @@ Draw.svgTextInput = function (text, alignment, unclicker, onchange, attrs, paren
     this.draw();
 };
 
-Draw.svgTextInput.HEIGHTWIDTHRATIO = 10;
+Draw.svgTextInput.HEIGHTWIDTHRATIO = 20;
 Draw.svgTextInput.TEXTTOTEXTBOXRATIO = 1.4;
-Draw.svgTextInput.MAXTEXTLENGTH = 40;
+Draw.svgTextInput.MAXTEXTLENGTH = 100;
 Draw.svgTextInput.prototype.restore = function (text) {
     this.text = text;
     this.text = this.text === "" ? this.defaultText: this.text;

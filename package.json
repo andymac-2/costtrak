@@ -1,0 +1,42 @@
+{
+  "name": "trakmap",
+  "version": "1.1.0",
+  "description": "railway diagrams",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andymac-2/costtrak.git"
+  },
+  "keywords": [
+    "railway",
+    "project",
+    "management",
+    "diagram",
+    "schedule",
+    "critical",
+    "path"
+  ],
+  "author": "Andrew Pritchard",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/andymac-2/costtrak/issues"
+  },
+  "homepage": "https://github.com/andymac-2/costtrak#readme",
+  "devDependencies": {
+    "eslint": "^5.14.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-config-google": "^0.12.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0"
+  },
+  "dependencies": {
+    "eslint-config-google 2": "^0.12.0",
+    "google-closure-compiler": "^20190215.0.1"
+  }
+}

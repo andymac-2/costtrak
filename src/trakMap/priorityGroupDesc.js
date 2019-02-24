@@ -52,7 +52,7 @@ PriorityGroupDesc.prototype.onclick = function (parent) {
     }, parent);
 
     var titleBox = Draw.htmlElem ("input", {
-        "class": "svgTextBox",
+        "class": "priorityGroupTitle",
         "value": this.title,
         "type": "text",
         "placeholder": "Product Group Name"
@@ -121,7 +121,7 @@ PriorityGroupDesc.prototype.modifyComment = function (elem) {
 };
 
 PriorityGroupDesc.prototype.modifyPriority = function (elem) {
-    this.restore(this.title, this.comment, elem.value);
+    this.restore(this.title, this.comment, elem.value | 0);
     this.modified = true;
 };
 

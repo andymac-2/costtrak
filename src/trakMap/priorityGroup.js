@@ -1,19 +1,23 @@
 'use strict'
 
+/**
+ * @constructor
+ * @struct
+ */
 var PriorityGroup  = function (trakMap, index, obj) {
-    this.trakMap = trakMap;
-    this.index = index;
+    /** @type {TrakMap} */ this.trakMap = trakMap;
+    /** @type {number} */ this.index = index;
     
-    this.name;
-    this.comment;
-    this.priority;
+    /** @type {string} */ this.name;
+    /** @type {number} */ this.comment;
+    /** @type {number} */ this.priority;
 
     // calculated
-    this.products = [];
-    this.milestones = [];
-    this.minLevel = Number.MAX_SAFE_INTEGER;
-    this.maxLevel = Number.MIN_SAFE_INTEGER;
-    this.yOffset = 0;
+    /** @type {Array<Product>} */ this.products = [];
+    /** @type {Array<Milestone>} */ this.milestones = [];
+    /** @type {number} */ this.minLevel = Number.MAX_SAFE_INTEGER;
+    /** @type {number} */ this.maxLevel = Number.MIN_SAFE_INTEGER;
+    /** @type {number} */ this.yOffset = 0;
 
     this.restore (obj);
 };
@@ -25,18 +29,21 @@ PriorityGroup.DEFAULTPRIORITYGROUP = {
 };
 // serialisation
 PriorityGroup.prototype.restore = function (obj) {
-    assert (() => obj.priority >= 0);
-    
-    this.name = obj.name || "";
-    this.comment = obj.comment || "";
-    this.priority = obj.priority;
+    this.name = obj["name"].toString();
+    this.comment = obj["comment"].toString();
+    this.priority = obj["priority"] | 0;
+
+    if (this.priority < 0) {
+        throw new FileValidationError (
+            "Product group \"" + this.name + "\", has an invalid priority");
+    }
 };
 PriorityGroup.prototype.save = function () {
     return {
         "name": this.name,
         "comment": this.comment,
         "priority": this.priority
-    }
+    };
 };
 PriorityGroup.prototype.toJSON = PriorityGroup.prototype.save;
 
@@ -265,5 +272,5 @@ PriorityGroup.prototype.createMilestone = function () {
 
 //tests
 PriorityGroup.prototype.checkInvariants = function () {
-    assert (() => trakMap.priorityGroups[this.index] = this);
+    assert (() => this.trakMap.priorityGroups[this.index] = this);
 };

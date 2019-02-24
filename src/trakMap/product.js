@@ -2,32 +2,35 @@
 
 // class invariants: the index property is the index of Product within
 // the products property of it's parent graph.
-
+/**
+ * @constructor
+ * @struct
+ */
 var Product = function (graph, index, obj) {
     // graph properties (state)
-    this.outgoing = [];
-    this.incoming = [];
-    this.priorityGroup;
-    this.value;
-    this.visited;
+    /** @type {Array<Dependency>} */ this.outgoing = [];
+    /** @type {Array<Dependency>} */ this.incoming = [];
+    /** @type {PriorityGroup} */ this.priorityGroup;
+    /** @type {number} */ this.value;
+    /** @type {boolean} */ this.visited;
 
     // user properties (state)
-    this.comment = "";
-    this.name = "";
-    this.level = 0;
-    this.direction = Product.GOINGUP;
-    this.weight = 0;
-    this.percent;
-    this.health;
+    /** @type {string} */ this.comment = "";
+    /** @type {string} */ this.name = "";
+    /** @type {number} */ this.level = 0;
+    /** @type {number} */ this.direction = Product.GOINGUP;
+    /** @type {number} */ this.weight = 0;
+    /** @type {number} */ this.percent;
+    /** @type {number} */ this.health;
     
     // drawing properties
-    this.start = {x: 0, y: 0};
-    this.end = {x: 0, y: 0};
+    /** @type {Object<string, number>} */ this.start = {x: 0, y: 0};
+    /** @type {Object<string, number>} */ this.end = {x: 0, y: 0};
     
-    this.index = index;
-    this.trakMap = graph;
+    /** @type {number} */ this.index = index;
+    /** @type {TrakMap} */ this.trakMap = graph;
 
-    this.dateBubble = new DateBubble (this.trakMap, this);
+    /** @type {DateBubble} */ this.dateBubble = new DateBubble (this.trakMap, this);
 
     this.restore(obj);
 };
@@ -69,7 +72,7 @@ Product.compareReverse = function (a, b) {
     }
     // puts milestones first
     return a.getWidth() - b.getWidth();
-}
+};
 Product.compareEnds = function (a, b) {
     var diff = b.getEndValue() - a.getEndValue();
     if (diff !== 0) {
@@ -80,27 +83,41 @@ Product.compareEnds = function (a, b) {
 };
 
 Product.prototype.restore = function (obj) {
-    this.name = obj.name;
-    this.comment = obj.comment || "";
-    this.weight = obj.weight;
-    this.health = obj.health || Product.ONTRACK;
-    this.percent = obj.percent || 0;
-    this.priorityGroup = this.trakMap.priorityGroups[obj.priorityGroup];
-    this.priorityGroup.addProduct(this);
-    
-    this.level = obj.level | 0;
+    this.name = obj["name"].toString();
+    this.comment = obj["comment"].toString() || "";
+    this.level = obj["level"] | 0;
 
-    assert (() => this.weight > 0);
+    this.weight = obj["weight"] | 7;
+    if (this.weight <= 1) {
+        throw new FileValidationError ("Product \"" + this.name + 
+            "\" has an invalid weight. Weight must be positive");
+    }
+
+    this.health = obj["health"] || Product.ONTRACK;
+    if (this.health !== Product.ATRISK && this.health !== Product.LATE) {
+        this.health = Product.ONTRACK;
+    }
+
+    this.percent = obj["percent"] || 0;
+    this.percent = Math.max(0, this.percent);
+    this.percent = Math.min(1, this.percent);
+
+    this.priorityGroup = this.trakMap.priorityGroups[obj["priorityGroup"]];
+    if (!this.priorityGroup) {
+        throw new FileValidationError ("Product \"" + this.name + 
+            "\" has an invalid product group index.");
+    }
+    this.priorityGroup.addProduct(this);
 };
 Product.prototype.save = function () {
     return {
         "name": this.name,
         "comment": this.comment,
-        "weight": this.weight,
-        "priorityGroup": this.priorityGroup.index,
         "level": this.level,
+        "weight": this.weight,
         "health": this.health,
-        "percent": this.percent
+        "percent": this.percent,
+        "priorityGroup": this.priorityGroup.index
     };
 };
 Product.prototype.toJSON = Product.prototype.save;
@@ -189,7 +206,7 @@ Product.prototype.getStart = function () {
         return {
             x: this.start.x + TrakMap.HSPACE,
             y: this.start.y
-        }
+        };
     }
     else if (this.trakMap.mode === TrakMap.LAZYMODE) {
         return this.start;
@@ -207,7 +224,8 @@ Product.prototype.getEnd = function () {
     }
 };
 Product.prototype.getWidth = function () {
-    return TrakMap.MINPRODUCTWIDTH + (TrakMap.UNITVALUEWIDTH * this.weight);
+    return TrakMap.MINPRODUCTWIDTH + 
+        this.trakMap.getMinSeparation(0, this.weight);
 };
 Product.prototype.getMinEndX = function () {
     return this.start.x + this.getWidth();
@@ -252,18 +270,34 @@ Product.prototype.setStartX = function (x) {
     this.start.x = x;
 };
 // remove dependency and remove dependent used also by Milestone class.
+/**
+ * @this {Product|Milestone}
+ * @param {Dependency} dep
+ */
 Product.prototype.removeDependency = function (dep) {
     assert (() => dep instanceof Dependency);
     Util.removeFromArray(this.incoming, dep);
 };
+/**
+ * @this {Product|Milestone}
+ * @param {Dependency} dep
+ */
 Product.prototype.addDependency = function (dep) {
     assert (() => dep.dependent === this)
     this.incoming.push(dep);
 };
+/**
+ * @this {Product|Milestone}
+ * @param {Dependency} dep
+ */
 Product.prototype.removeDependent = function (dep) {
     assert (() => dep instanceof Dependency);
     Util.removeFromArray (this.outgoing, dep);
 };
+/**
+ * @this {Product|Milestone}
+ * @param {Dependency} dep
+ */
 Product.prototype.addDependent = function (dep) {
     assert (() => dep.dependency === this);
     this.outgoing.push(dep);
@@ -272,6 +306,10 @@ Product.prototype.addDependent = function (dep) {
 Product.prototype.modifyName = function (e, input) {
     this.name = input.text;
 };
+/**
+ * @this {Product|Milestone}
+ * @param {number} dir
+ */
 Product.prototype.setDirection = function (dir) {
     assert (() => dir === Product.GOINGUP || dir === Product.GOINGDOWN);
     this.direction = dir;
@@ -353,11 +391,11 @@ Product.prototype.checkInvariants = function () {
         dep.checkInvariants();
         var testValue = dep.dependency.getEndValue();
         if (this.getPriority() <= dep.dependency.getPriority()) {
-            maxvalue = Math.max(testvalue, maxvalue)
+            maxValue = Math.max(testValue, maxValue)
         }
         assert (() => dep.dependent === this);
     });
-    assert (() => maxvalue === this.value);
+    assert (() => maxValue === this.value);
 
     this.outgoing.forEach(dep => {
         assert (() => dep.dependency === this);

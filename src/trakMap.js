@@ -1,39 +1,45 @@
 'use strict'
 
+/**
+ * @constructor
+ * @struct
+ */
 var TrakMap = function (obj) {
     // View
-    this.elem = Draw.svgElem ("svg", {});
+    /** @type {Element} */ this.elem = Draw.svgElem ("svg", {});
 
     //View model (calculated)
-    this.rightMost = 0;
-    this.bottom = 0;
+    /** @type {number} */ this.rightMost = 0;
+    /** @type {number} */ this.bottom = 0;
 
     // graph elements (state)
-    this.products = [];
-    this.milestones = [];
-    this.dependencies = [];
-    this.priorityGroups = [];
-    this.mode;
+    /** @type {Array<Product>} */ this.products = [];
+    /** @type {Array<Milestone>} */ this.milestones = [];
+    /** @type {Array<Dependency>} */ this.dependencies = [];
+    /** @type {Array<PriorityGroup>} */ this.priorityGroups = [];
+    /** @type {number} */ this.mode;
+    /** @type {string} */this.title;
 
     // selections
-    this.selection = null;
-    this.selType = TrakMap.SELNOTHING;
+    /** @type {Product|Milestone} */ this.selection;
+    /** @type {number} */ this.selType;
 
     /** @type {Unclicker} */ this.unclicker = new Unclicker (this.elem);
     this.restore(obj);
 };
 TrakMap.HSPACE = 44;
 TrakMap.MINPRODUCTWIDTH = 250;
-TrakMap.UNITVALUEWIDTH = 3;
+TrakMap.UNITVALUEWIDTH = 50;
 TrakMap.VSPACE = 70;
 TrakMap.PRIORITYSPACE = 130;
 TrakMap.MARGIN = 30;
-TrakMap.PAGEMARGIN = 40;
+TrakMap.TITLEHEIGHT = 20;
 
 TrakMap.LAZYMODE = 0;
 TrakMap.GREEDYMODE = 1;
 
 TrakMap.NEWFILE = {
+    "title": "New TrakMap",
     "products" : [
         Product.DEFAULTPRODUCT
     ],
@@ -47,10 +53,11 @@ TrakMap.NEWFILE = {
     "priorityGroups": [
         PriorityGroup.DEFAULTPRIORITYGROUP
     ]
-}
+};
 
 TrakMap.prototype.save = function () {
     return {
+        "title": this.title,
         "mode": this.mode,
         "priorityGroups": this.priorityGroups,
         "products": this.products.map(product => product.save()),
@@ -60,27 +67,34 @@ TrakMap.prototype.save = function () {
 };
 
 TrakMap.prototype.restore = function (obj) {
-    this.mode = obj.mode;
+    this.title = obj["title"].toString() || "Untitled";
+    this.mode = obj["mode"];
+    if (this.mode !== TrakMap.GREEDYMODE && this.mode !== TrakMap.LAZYMODE) {
+        throw new FileValidationError("Invalid TrakMap mode.");
+    }
 
     this.priorityGroups = [];
-    obj.priorityGroups.forEach ((priorityGroup, i) => {
+    obj["priorityGroups"].forEach ((priorityGroup, i) => {
         this.priorityGroups.push(new PriorityGroup (this, i, priorityGroup));
     });
 
     this.milestones = [];
-    obj.milestones.forEach((milestone, i) => {
+    obj["milestones"].forEach((milestone, i) => {
         this.milestones.push(new Milestone (this, i, milestone));
-    })
+    });
 
     this.products = [];
-    obj.products.forEach((product, i) => {
+    obj["products"].forEach((product, i) => {
         this.products.push(new Product (this, i, product));
     });
 
     this.dependencies = [];
-    obj.dependencies.forEach((dependency, i) => {
+    obj["dependencies"].forEach((dependency, i) => {
         this.dependencies.push(new Dependency (this, i, dependency));
     });
+
+    this.selection = null;
+    this.selType = TrakMap.SELNOTHING;
 };
 
 TrakMap.prototype.draw = function () {
@@ -88,6 +102,7 @@ TrakMap.prototype.draw = function () {
 
     let width = this.getRight() - this.getLeft();
     let height = this.getBottom() - this.getTop();
+    let centre = (this.getRight() + this.getLeft()) / 2;
 
     this.elem.setAttribute ("width", "" + width);
     this.elem.setAttribute ("viewBox", "" + 
@@ -97,6 +112,15 @@ TrakMap.prototype.draw = function () {
         height + " ");
 
     this.elem.innerHTML = "";
+
+    let g = Draw.svgElem("g", {}, this.elem);
+    new Draw.svgTextInput (this.title, Draw.ALIGNCENTER, this.unclicker, 
+        (e, inputBox) => this.modifyTitle(inputBox.text), 
+        {
+            "class": "trakMapTitle",
+            "transform": "translate(" 
+                + centre + " " + (this.getTop() + 40) + ")"
+        }, g, "Untitled");
 
     let connections =  Draw.svgElem("g", {"class": "TMConnections"}, this.elem);
     let lines =  Draw.svgElem("g", {"class": "TMProducts"}, this.elem);
@@ -167,8 +191,8 @@ TrakMap.prototype.resolveXValues = function () {
             if (lastValue !== min.getEndValue()) {
                 let oldLast = lastValue;
                 lastValue = min.getEndValue();
-                cursor += TrakMap.HSPACE +
-                    (lastValue - oldLast) * TrakMap.UNITVALUEWIDTH;
+                cursor += TrakMap.HSPACE + 
+                    this.getMinSeparation(lastValue, oldLast);
                 cursor = Math.max(cursor, min.getMinEndX());
             }
             this.rightMost = Math.max(this.rightMost, cursor);
@@ -180,7 +204,7 @@ TrakMap.prototype.resolveXValues = function () {
             let oldLast = lastValue;
             lastValue = product.getStartValue();
             cursor += TrakMap.HSPACE +
-                (lastValue - oldLast) * TrakMap.UNITVALUEWIDTH;
+                this.getMinSeparation(lastValue, oldLast);
         }
         product.setStartX(cursor);
         heap.add(product);
@@ -191,7 +215,7 @@ TrakMap.prototype.resolveXValues = function () {
             let oldLast = lastValue;
             lastValue = min.getEndValue();
             cursor += TrakMap.HSPACE +
-                (lastValue - oldLast) * TrakMap.UNITVALUEWIDTH;
+                this.getMinSeparation(lastValue, oldLast);
             cursor = Math.max(cursor, min.getMinEndX());
         }
         this.rightMost = Math.max(this.rightMost, cursor);
@@ -222,9 +246,7 @@ TrakMap.prototype.greedyResolve = function () {
 };
 
 TrakMap.prototype.resolvePriorityGroupOffsets = function () {
-    this.priorityGroups.length;
-    
-    let boundary = TrakMap.MARGIN;
+    let boundary = TrakMap.MARGIN + TrakMap.TITLEHEIGHT;
     this.priorityGroups.forEach (priorityGroup => {
         priorityGroup.yOffset = boundary - priorityGroup.minLevel * TrakMap.VSPACE;
         
@@ -257,14 +279,24 @@ TrakMap.prototype.getTop = function () {
 TrakMap.prototype.getLeft = function () {
     return -PriorityGroup.LEFTMARGIN - TrakMap.MARGIN;
 };
+TrakMap.prototype.getMinSeparation = function (val1, val2) {
+    return Math.log2(Math.abs(val1 - val2)) * TrakMap.UNITVALUEWIDTH;
+};
+
+// minimum width to dosplay most titles
+TrakMap.MINIMUMWIDTH = 700;
 TrakMap.prototype.getRight = function () {
-    return this.rightMost + PriorityGroup.LEFTMARGIN + TrakMap.MARGIN;
+    let min = this.rightMost + PriorityGroup.LEFTMARGIN + TrakMap.MARGIN;
+    return Math.max(min, TrakMap.MINIMUMWIDTH);
 };
 TrakMap.prototype.getBottom = function () {
     return this.bottom;
 };
 
-// modifictions:
+// modifictions
+TrakMap.prototype.modifyTitle = function (text) {
+    this.title = text;
+};
 TrakMap.prototype.addProduct = function (obj) {
     let product = new Product (this, this.products.length, obj);
     this.products.push(product);
@@ -329,9 +361,8 @@ TrakMap.prototype.deleteMilestoneUnsafe = function (milestone) {
 // special utilities
 TrakMap.prototype.makeSafeModification = function (func) {
     let backup = this.save();
-    func();
-
     try {
+        func();
         this.draw();
     }
     catch (e) {
@@ -425,7 +456,7 @@ TrakMap.prototype.select = function (type, obj) {
              obj !== this.selection)
     {
         assert (() => this.selection instanceof Product);
-        assert (() => obj instanceof Product);
+        assert (() => obj instanceof Product || obj instanceof Milestone);
         
         this.makeSafeModification(
             () => this.newDependency (this.selection, obj));
@@ -438,7 +469,7 @@ TrakMap.prototype.select = function (type, obj) {
              obj !== this.selection)
     {
         assert (() => this.selection instanceof Product);
-        assert (() => obj instanceof Product);
+        assert (() => obj instanceof Product || obj instanceof Milestone);
 
         this.makeSafeModification(
             () => this.newDependency (obj, this.selection));

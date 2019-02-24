@@ -8,9 +8,9 @@ Util.allertErr = function (err) {
 };
 
 Util.max = function (a, b) {
-    Console.warn("Util.max is deprecated, use Math.max instead");
+    console.error("Util.max is deprecated, use Math.max instead");
     return Math.max (a, b);
-}
+};
 
 Util.clamp = function (min, max, value) {
     value = value > max ? max : value;

@@ -1,21 +1,23 @@
-'use strict'
-
+"use strict";
 // The milestone has some similarities to the interface of product,
 // since it can behave as a dependent or dependency
-
+/**
+ * @constructor
+ * @struct
+ */
 var Milestone = function (trakMap, index, obj) {
-    this.incoming = [];
-    this.outgoing = [];
+    /** @type {Array<Dependency>} */ this.incoming = [];
+    /** @type {Array<Dependency>} */ this.outgoing = [];
     
-    this.priorityGroup;
-    this.value;
-    this.level;
+    /** @type {PriorityGroup} */ this.priorityGroup;
+    /** @type {number} */ this.value;
+    /** @type {number} */ this.level;
 
-    this.trakMap = trakMap;
-    this.index = index;
+    /** @type {TrakMap} */ this.trakMap = trakMap;
+    /** @type {number} */ this.index = index;
 
-    this.direction = Product.GOINGUP;
-    this.position = {x: 0, y: 0};
+    /** @type {number} */ this.direction = Product.GOINGUP;
+    /** @type {Object<string, number>} */ this.position = {x: 0, y: 0};
 
     this.restore (obj);
 };
@@ -27,10 +29,14 @@ Milestone.DEFAULTMILESTONE = {
 
 // save and restore
 Milestone.prototype.restore = function (obj) {
-    this.value = obj.value;
-    this.priorityGroup = this.trakMap.priorityGroups[obj.priorityGroup];
+    this.value = obj["value"] | 0;
+    this.level = obj["level"] | 0;
+
+    this.priorityGroup = this.trakMap.priorityGroups[obj["priorityGroup"]];
+    if (!this.priorityGroup) {
+        throw new FileValidationError ("Milestone has invalid product group index");
+    }
     this.priorityGroup.addMilestone(this);
-    this.level = obj.level;
 };
 Milestone.prototype.save = function () {
     assert (() => this.trakMap.priorityGroups[this.priorityGroup.index] ===
@@ -50,6 +56,10 @@ Milestone.prototype.draw = function (parent) {
         "class": "milestone",
         "transform": "translate(" + this.position.x + ", " + this.position.y + ")"
     }, parent);
+
+    milestone.addEventListener("click", () => {
+        this.trakMap.select (TrakMap.SELNORMAL, this);
+    });
 
     Draw.svgElem("path", {
         "d" : "M -" +  Milestone.DIAMONDSIZE + " 0" +
@@ -213,5 +223,3 @@ Milestone.prototype.checkInvariants = function () {
             this.direction === Product.GOINGUP)
     assert (this.trakMap.milestones[this.index] === this)   
 };
-
-
