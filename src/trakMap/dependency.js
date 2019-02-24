@@ -6,23 +6,27 @@ class HangingDependencyError extends Error {
     }
 }
 
+/**
+ * @constructor
+ * @struct
+ */
 var Dependency = function (trakMap, index, obj) {
     // state
-    this.dependencyType;
-    this.dependency;
-    this.dependentType;
-    this.dependent;
+    /** @type {number} */ this.dependencyType;
+    /** @type {Product|Milestone} */ this.dependency;
+    /** @type {number} */ this.dependentType;
+    /** @type {Product|Milestone} */ this.dependent;
 
     // view model
-    this.trakMap = trakMap;
+    /** @type {TrakMap} */ this.trakMap = trakMap;
     
-    this.start;
-    this.end;
+    /** @type {Object<string, number>} */ this.start;
+    /** @type {Object<string, number>} */ this.end;
 
-    this.index = index;
+    /** @type {number} */ this.index = index;
 
     this.restore (obj);
-}
+};
 Dependency.MILESTONE = 0;
 Dependency.PRODUCT = 1;
 

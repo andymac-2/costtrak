@@ -2,32 +2,35 @@
 
 // class invariants: the index property is the index of Product within
 // the products property of it's parent graph.
-
+/**
+ * @constructor
+ * @struct
+ */
 var Product = function (graph, index, obj) {
     // graph properties (state)
-    this.outgoing = [];
-    this.incoming = [];
-    this.priorityGroup;
-    this.value;
-    this.visited;
+    /** @type {Array<Dependency>} */ this.outgoing = [];
+    /** @type {Array<Dependency>} */ this.incoming = [];
+    /** @type {PriorityGroup} */ this.priorityGroup;
+    /** @type {number} */ this.value;
+    /** @type {boolean} */ this.visited;
 
     // user properties (state)
-    this.comment = "";
-    this.name = "";
-    this.level = 0;
-    this.direction = Product.GOINGUP;
-    this.weight = 0;
-    this.percent;
-    this.health;
+    /** @type {string} */ this.comment = "";
+    /** @type {string} */ this.name = "";
+    /** @type {number} */ this.level = 0;
+    /** @type {number} */ this.direction = Product.GOINGUP;
+    /** @type {number} */ this.weight = 0;
+    /** @type {number} */ this.percent;
+    /** @type {number} */ this.health;
     
     // drawing properties
-    this.start = {x: 0, y: 0};
-    this.end = {x: 0, y: 0};
+    /** @type {Object<string, number>} */ this.start = {x: 0, y: 0};
+    /** @type {Object<string, number>} */ this.end = {x: 0, y: 0};
     
-    this.index = index;
-    this.trakMap = graph;
+    /** @type {number} */ this.index = index;
+    /** @type {TrakMap} */ this.trakMap = graph;
 
-    this.dateBubble = new DateBubble (this.trakMap, this);
+    /** @type {DateBubble} */ this.dateBubble = new DateBubble (this.trakMap, this);
 
     this.restore(obj);
 };
@@ -69,7 +72,7 @@ Product.compareReverse = function (a, b) {
     }
     // puts milestones first
     return a.getWidth() - b.getWidth();
-}
+};
 Product.compareEnds = function (a, b) {
     var diff = b.getEndValue() - a.getEndValue();
     if (diff !== 0) {
@@ -203,7 +206,7 @@ Product.prototype.getStart = function () {
         return {
             x: this.start.x + TrakMap.HSPACE,
             y: this.start.y
-        }
+        };
     }
     else if (this.trakMap.mode === TrakMap.LAZYMODE) {
         return this.start;
@@ -267,18 +270,34 @@ Product.prototype.setStartX = function (x) {
     this.start.x = x;
 };
 // remove dependency and remove dependent used also by Milestone class.
+/**
+ * @this {Product|Milestone}
+ * @param {Dependency} dep
+ */
 Product.prototype.removeDependency = function (dep) {
     assert (() => dep instanceof Dependency);
     Util.removeFromArray(this.incoming, dep);
 };
+/**
+ * @this {Product|Milestone}
+ * @param {Dependency} dep
+ */
 Product.prototype.addDependency = function (dep) {
     assert (() => dep.dependent === this)
     this.incoming.push(dep);
 };
+/**
+ * @this {Product|Milestone}
+ * @param {Dependency} dep
+ */
 Product.prototype.removeDependent = function (dep) {
     assert (() => dep instanceof Dependency);
     Util.removeFromArray (this.outgoing, dep);
 };
+/**
+ * @this {Product|Milestone}
+ * @param {Dependency} dep
+ */
 Product.prototype.addDependent = function (dep) {
     assert (() => dep.dependency === this);
     this.outgoing.push(dep);
@@ -287,6 +306,10 @@ Product.prototype.addDependent = function (dep) {
 Product.prototype.modifyName = function (e, input) {
     this.name = input.text;
 };
+/**
+ * @this {Product|Milestone}
+ * @param {number} dir
+ */
 Product.prototype.setDirection = function (dir) {
     assert (() => dir === Product.GOINGUP || dir === Product.GOINGDOWN);
     this.direction = dir;
@@ -368,11 +391,11 @@ Product.prototype.checkInvariants = function () {
         dep.checkInvariants();
         var testValue = dep.dependency.getEndValue();
         if (this.getPriority() <= dep.dependency.getPriority()) {
-            maxvalue = Math.max(testvalue, maxvalue)
+            maxValue = Math.max(testValue, maxValue)
         }
         assert (() => dep.dependent === this);
     });
-    assert (() => maxvalue === this.value);
+    assert (() => maxValue === this.value);
 
     this.outgoing.forEach(dep => {
         assert (() => dep.dependency === this);

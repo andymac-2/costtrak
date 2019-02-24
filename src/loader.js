@@ -1,5 +1,7 @@
-/** @constructor
-    @struct */
+/** 
+ * @constructor
+ * @struct 
+ */
 let Loader = function (parent) {
     //view
     /** @type {Element} */ 
@@ -7,7 +9,7 @@ let Loader = function (parent) {
         "class": "trakMapContainer"
     }, parent);
 
-    /** @type {MilestoneMap} */ this.trakMap;
+    /** @type {TrakMap} */ this.trakMap;
     /** @type {Element} */ this.parent = parent;
 
     // Util.throttleEvent (window, "resize", this.draw.bind(this), 100);

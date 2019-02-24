@@ -1,24 +1,28 @@
 'use strict'
 
+/**
+ * @constructor
+ * @struct
+ */
 var TrakMap = function (obj) {
     // View
-    this.elem = Draw.svgElem ("svg", {});
+    /** @type {Element} */ this.elem = Draw.svgElem ("svg", {});
 
     //View model (calculated)
-    this.rightMost = 0;
-    this.bottom = 0;
+    /** @type {number} */ this.rightMost = 0;
+    /** @type {number} */ this.bottom = 0;
 
     // graph elements (state)
-    this.products = [];
-    this.milestones = [];
-    this.dependencies = [];
-    this.priorityGroups = [];
-    this.mode;
-    this.title;
+    /** @type {Array<Product>} */ this.products = [];
+    /** @type {Array<Milestone>} */ this.milestones = [];
+    /** @type {Array<Dependency>} */ this.dependencies = [];
+    /** @type {Array<PriorityGroup>} */ this.priorityGroups = [];
+    /** @type {number} */ this.mode;
+    /** @type {string} */this.title;
 
     // selections
-    this.selection;
-    this.selType;
+    /** @type {Product|Milestone} */ this.selection;
+    /** @type {number} */ this.selType;
 
     /** @type {Unclicker} */ this.unclicker = new Unclicker (this.elem);
     this.restore(obj);
@@ -242,8 +246,6 @@ TrakMap.prototype.greedyResolve = function () {
 };
 
 TrakMap.prototype.resolvePriorityGroupOffsets = function () {
-    this.priorityGroups.length;
-    
     let boundary = TrakMap.MARGIN + TrakMap.TITLEHEIGHT;
     this.priorityGroups.forEach (priorityGroup => {
         priorityGroup.yOffset = boundary - priorityGroup.minLevel * TrakMap.VSPACE;

@@ -1,4 +1,6 @@
 'use strict'
+/** @define {boolean} */
+const NDEBUG = false;
 
 class AssertionError extends Error {
     constructor (msg) {
@@ -13,9 +15,6 @@ class FileValidationError extends Error {
         this.name = "FileValidationError";
     }
 }
-
-/** @define {boolean} */
-let NDEBUG = false;
 
 // runtime check, check for user errors.
 let runTAssert = function (test) {

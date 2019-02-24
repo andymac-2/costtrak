@@ -7,44 +7,21 @@ class CircularDependencyError extends Error {
     }
 }
 
-/** @interface */
-var WeightedNode = function () {}
-
-// read only
-/** @type {[weightedNode]} */
-WeightedNode.prototype.outgoing;
-/** @type {[weightedNode]} */
-WeightedNode.prototype.incoming;
-/** @type {number} */
-WeightedNode.prototype.weight;
-/** @type {number} */
-WeightedNode.prototype.priority;
-
-// modifiable properties
-/** 
-    a nodes value is at least minValue and at least as big as all of
-    it's dependents values plus their weight. the value is the "start" of the node
-@type {number} */
-WeightedNode.prototype.value;
-/** @type {boolean} */
-WeightedNode.prototype.visited;
-
-
-
 
 var nodeWeightedGraph = {};
 
-/** a topological sort
-@type {function([WeightedNode]):[WeightedNode]}
+/** sort nodes by their minimal possible value.
+ * @param {Array<Product>} nodes A list of unsorted nodes.
+ * @return {Array<Product>} Sorted nodes
 */
 nodeWeightedGraph.topoSort = function (nodes) {
     // find all nodes which have no dependencies, also set all nodes
     // visited to "false"
-    nodes.forEach(node => node.visited = false)
+    nodes.forEach(node => node.visited = false);
     let active = nodes
-        .filter(node => this.fulfilledDependencies(node))
+        .filter(node => nodeWeightedGraph.fulfilledDependencies(node))
         .map(node => {
-            node.visited = true
+            node.visited = true;
             return node;
         });   
 
@@ -58,7 +35,7 @@ nodeWeightedGraph.topoSort = function (nodes) {
 
         active[i].outgoing.forEach (dep => {
             let dependent = dep.dependent;
-            if (this.fulfilledDependencies (dependent) &&
+            if (nodeWeightedGraph.fulfilledDependencies (dependent) &&
                 dependent.visited === false)
             {
                 dependent.visited = true;
@@ -75,12 +52,16 @@ nodeWeightedGraph.topoSort = function (nodes) {
     assert (() => active.length === nodes.length);
     return active;
 };
+/** sort nodes by their minimal possible value.
+ * @param {Array<Product>} nodes A list of unsorted nodes.
+ * @return {Array<Product>} Sorted nodes
+*/
 nodeWeightedGraph.topoSortLazy = function (nodes) {
-    nodes.forEach(node => node.visited = false)
+    nodes.forEach(node => node.visited = false);
     let active = nodes
-        .filter(node => this.fulfilledDependents(node))
+        .filter(node => nodeWeightedGraph.fulfilledDependents(node))
         .map(node => {
-            node.visited = true
+            node.visited = true;
             return node;
         });
     
@@ -89,7 +70,7 @@ nodeWeightedGraph.topoSortLazy = function (nodes) {
 
         active[i].incoming.forEach (dep => {
             let dependency = dep.dependency;
-            if (this.fulfilledDependents (dependency) &&
+            if (nodeWeightedGraph.fulfilledDependents (dependency) &&
                 dependency.visited === false)
             {
                 dependency.visited = true;
@@ -114,10 +95,11 @@ nodeWeightedGraph.fulfilledDependents = function (node) {
 };
 
 /** sort nodes by their minimal possible value.
-@type {function([WeightedNode]):[WeightedNode]}
+ * @param {Array<Product>} nodes A list of unsorted nodes.
+ * @return {Array<Product>} Sorted nodes
 */
 nodeWeightedGraph.greedySort = function (nodes) {
-    var topoSorted = this.topoSort (nodes);
+    var topoSorted = nodeWeightedGraph.topoSort (nodes);
 
     topoSorted.forEach(node => {
         node.value = Number.MIN_SAFE_INTEGER;
@@ -139,8 +121,12 @@ nodeWeightedGraph.greedySort = function (nodes) {
 
     return topoSorted.sort(Product.compare);
 };
+/** sort nodes by their minimal possible value.
+ * @param {Array<Product>} nodes A list of unsorted nodes.
+ * @return {Array<Product>} Sorted nodes
+*/
 nodeWeightedGraph.lazySort = function (nodes) {
-    var topoSorted = this.topoSortLazy (nodes);
+    var topoSorted = nodeWeightedGraph.topoSortLazy (nodes);
 
     topoSorted.forEach(node => {
         node.value = Number.MAX_SAFE_INTEGER;

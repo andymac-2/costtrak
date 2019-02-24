@@ -1,19 +1,23 @@
 "use strict";
 // The milestone has some similarities to the interface of product,
 // since it can behave as a dependent or dependency
+/**
+ * @constructor
+ * @struct
+ */
 var Milestone = function (trakMap, index, obj) {
-    this.incoming = [];
-    this.outgoing = [];
+    /** @type {Array<Dependency>} */ this.incoming = [];
+    /** @type {Array<Dependency>} */ this.outgoing = [];
     
-    this.priorityGroup;
-    this.value;
-    this.level;
+    /** @type {PriorityGroup} */ this.priorityGroup;
+    /** @type {number} */ this.value;
+    /** @type {number} */ this.level;
 
-    this.trakMap = trakMap;
-    this.index = index;
+    /** @type {TrakMap} */ this.trakMap = trakMap;
+    /** @type {number} */ this.index = index;
 
-    this.direction = Product.GOINGUP;
-    this.position = {x: 0, y: 0};
+    /** @type {number} */ this.direction = Product.GOINGUP;
+    /** @type {Object<string, number>} */ this.position = {x: 0, y: 0};
 
     this.restore (obj);
 };
@@ -219,5 +223,3 @@ Milestone.prototype.checkInvariants = function () {
             this.direction === Product.GOINGUP)
     assert (this.trakMap.milestones[this.index] === this)   
 };
-
-
