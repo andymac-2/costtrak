@@ -29,6 +29,7 @@ PriorityGroup.DEFAULTPRIORITYGROUP = {
 };
 // serialisation
 PriorityGroup.prototype.restore = function (obj) {
+    assert (() => !(obj instanceof PriorityGroup));
     this.name = obj["name"].toString();
     this.comment = obj["comment"].toString();
     this.priority = obj["priority"] | 0;
@@ -45,7 +46,10 @@ PriorityGroup.prototype.save = function () {
         "priority": this.priority
     };
 };
-PriorityGroup.prototype.toJSON = PriorityGroup.prototype.save;
+
+PriorityGroup.prototype["toJSON"] = () => {
+    throw new AssertionError("use the save() method on priority groups");
+};
 
 //drawing
 PriorityGroup.LEFTMARGIN = 50;
