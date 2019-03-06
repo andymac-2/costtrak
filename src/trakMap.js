@@ -59,7 +59,7 @@ TrakMap.prototype.save = function () {
     return {
         "title": this.title,
         "mode": this.mode,
-        "priorityGroups": this.priorityGroups,
+        "priorityGroups": this.priorityGroups.map(pg => pg.save()),
         "products": this.products.map(product => product.save()),
         "milestones": this.milestones.map(milestone => milestone.save()),
         "dependencies": this.dependencies.map(dependency => dependency.save())

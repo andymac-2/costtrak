@@ -26,7 +26,7 @@ files = src/main.js\
 .PHONY : webapp debug release
 webapp : dist/bundle.js dist/main.css dist/index.html dist/icons
 # debug will force a compilation
-debug : dist/main.css dist/index.html dist/icons
+debug : dist/main.css dist/index.html dist/icons dist/src
 	npx google-closure-compiler\
 		-O ADVANCED\
 		--js_output_file dist/bundle.js\
@@ -40,6 +40,7 @@ release : docs/main.css docs/index.html docs/bundle.js docs/icons
 
 dist :
 	mkdir dist
+	mkdir src
 dist/bundle.js : $(files) dist
 	npx google-closure-compiler \
 		-O ADVANCED\
@@ -56,6 +57,8 @@ dist/index.html : src/dist/index.html dist
 	cp src/dist/index.html dist/index.html
 dist/icons : dist
 	cp -R src/icons dist
+dist/src : dist
+	cp -R src dist
 
 docs :
 	mkdir docs
