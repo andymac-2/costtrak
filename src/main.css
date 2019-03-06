@@ -129,6 +129,9 @@ body {
 }
 
 /* Menus */
+.menuEntry {
+    cursor: pointer;
+}
 .menuEntry circle{
     fill: hsl(180, 30%, 90%);
     stroke: none;

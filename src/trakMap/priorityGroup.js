@@ -47,8 +47,9 @@ PriorityGroup.prototype.save = function () {
     };
 };
 
-PriorityGroup.prototype["toJSON"] = 
-    () => assert(false && "use the save() method on priority groups");
+PriorityGroup.prototype["toJSON"] = () => {
+    throw new AssertionError("use the save() method on priority groups");
+};
 
 //drawing
 PriorityGroup.LEFTMARGIN = 50;

@@ -56,9 +56,9 @@ dist/main.css : src/main.css dist
 dist/index.html : src/dist/index.html dist
 	cp src/dist/index.html dist/index.html
 dist/icons : dist
-	cp -R src/icons dist
+	cp -fR src/icons dist
 dist/src : dist
-	cp -R src dist
+	cp -fR src dist
 
 docs :
 	mkdir docs
@@ -69,5 +69,5 @@ docs/index.html : dist/index.html docs
 docs/bundle.js : dist/bundle.js docs
 	cp dist/bundle.js docs/bundle.js
 docs/icons : docs
-	cp -R src/icons docs
+	cp -fR src/icons docs
 
