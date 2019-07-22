@@ -6,6 +6,7 @@ files = src/main.js\
 	src/loader.js\
 	src/onUnclick.js\
 	src/util.js\
+	src/saveLoad.js\
 	src/trakMap/priorityGroup.js\
 	src/trakMap/product.js\
 	src/trakMap/dateBubble.js\
@@ -69,5 +70,5 @@ docs/index.html : dist/index.html docs
 docs/bundle.js : dist/bundle.js docs
 	cp dist/bundle.js docs/bundle.js
 docs/icons : docs
-	cp -fR src/icons docs
+	cp -R src/icons docs
 
