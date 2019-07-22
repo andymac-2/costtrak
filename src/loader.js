@@ -3,52 +3,48 @@
  * @struct 
  */
 let Loader = function (parent) {
+    parent.innerHTML = "";
     //view
-    /** @type {Element} */ 
-    this.elem = Draw.htmlElem ("div", {
+    /** @type {Element} */
+    this.elem = Draw.htmlElem("div", {
         "class": "trakMapContainer"
     }, parent);
 
     /** @type {TrakMap} */ this.trakMap;
     /** @type {Element} */ this.parent = parent;
 
-    // Util.throttleEvent (window, "resize", this.draw.bind(this), 100);
+    this.saveLoad = new SaveLoad();
 
     this.newFile();
 };
 
-Loader.prototype.save = function () {
-    var string = JSON.stringify(this.trakMap.save(), null, "\t");
-    // TODO: trakmap name
-    Util.download (this.trakMap.title + ".json", string, "application/json",
-        this.elem);
-};
-
-Loader.prototype.restoreUnsafe = function (string) {
-    var obj = JSON.parse(string);
+Loader.prototype.restoreUnsafe = function (obj) {
     this.trakMap.restore(obj);
 };
-Loader.prototype.restore = function (string) {
-    this.trakMap.makeSafeModification(() => this.restoreUnsafe(string));
+Loader.prototype.restore = function (obj) {
+    this.trakMap.makeSafeModification(() => this.restoreUnsafe(obj));
 };
 
 Loader.prototype.draw = function () {
     this.elem.innerHTML = "";
-    
-    var menubar = Draw.htmlElem ("div", {
+
+    var menubar = Draw.htmlElem("div", {
         "class": "menubar"
     }, this.elem);
 
     var fileSegment = Draw.menuBarSegment("File", menubar);
-    Draw.iconBar ([{
+    Draw.iconBar([{
         icon: "icons/new.svg",
         action: this.newFile.bind(this)
     }, {
         icon: "icons/open.svg",
-        action: this.loadFile.bind(this)
+        action: this.open.bind(this)
     }, {
         icon: "icons/save.svg",
         action: this.save.bind(this)
+    }, {
+        icon: "icons/save-as.svg",
+        action: this.saveAs.bind(this)
     }], {}, fileSegment.body);
 
     let priorityGroupSegment = Draw.menuBarSegment("Group", menubar);
@@ -63,14 +59,14 @@ Loader.prototype.draw = function () {
         action: () => this.trakMap.toggleMode()
     }], {}, modeSegment.body);
 
-    let printSegment = Draw.menuBarSegment ("Print", menubar);
-    Draw.iconBar ([{
+    let printSegment = Draw.menuBarSegment("Print", menubar);
+    Draw.iconBar([{
         icon: "icons/print.svg",
         action: this.print.bind(this)
     }], {}, printSegment.body);
 
-    let aboutSegment = Draw.menuBarSegment ("About", menubar);
-    Draw.iconBar ([{
+    let aboutSegment = Draw.menuBarSegment("About", menubar);
+    Draw.iconBar([{
         icon: "icons/info.svg",
         action: () => alert(Loader.aboutText)
     }, {
@@ -88,12 +84,42 @@ Loader.prototype.draw = function () {
 
 // user events
 Loader.prototype.newFile = function () {
-    this.trakMap = new TrakMap (TrakMap.NEWFILE);
+    this.saveLoad.reset();
+    this.trakMap = new TrakMap(TrakMap.NEWFILE);
     this.draw();
 };
 
-Loader.prototype.loadFile = function () {
-    Util.upload (this.elem, (str) => this.restore(str), ".json");
+Loader.prototype.open = function () {
+    this.saveLoad.open(
+        (obj) => this.restore(obj),
+        (err) => {
+            console.error(err);
+        });
+};
+
+Loader.prototype.save = function () {
+    var string = JSON.stringify(this.trakMap.save(), null, "\t");
+
+    let success = () => { };
+    let failure = error => {
+        console.error(error);
+    };
+
+    if (this.saveLoad.isFileOpen()) {
+        this.saveLoad.save(success, failure, string);
+    }
+    else {
+        this.saveLoad.saveAs(success, failure, this.trakMap.title + ".json", string);
+    }
+};
+Loader.prototype.saveAs = function () {
+    let string = JSON.stringify(this.trakMap.save(), null, "\t");
+    let success = () => { };
+    let failure = error => {
+        console.error(error);
+    };
+
+    this.saveLoad.saveAs(success, failure, this.trakMap.title + ".json", string);
 };
 
 Loader.prototype.print = function () {
@@ -101,7 +127,7 @@ Loader.prototype.print = function () {
     trakMap.draw();
     this.parent.innerHTML = trakMap.elem.outerHTML;
     this.parent.children[0].setAttribute("class", "trakMapPage");
-    window.print(); 
+    window.print();
     this.parent.innerHTML = "";
     this.parent.appendChild(this.elem);
 };

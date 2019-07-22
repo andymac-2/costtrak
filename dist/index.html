@@ -1,25 +1,75 @@
 <!doctype html>
 <html class="no-js" lang="">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>Trak Map</title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="manifest" href="site.webmanifest">
-    <link rel="apple-touch-icon" href="icon.png">
-    <!-- Place favicon.ico in the root directory -->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Trak Map</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="main.css">
-  </head>
-  <body>
-    <!--[if lte IE 9]>
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="apple-touch-icon" href="icon.png">
+  <!-- Place favicon.ico in the root directory -->
+
+  <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+  <!--[if lte IE 9]>
         <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
         <![endif]-->
 
-    <div id="app"></div>
-    
-    <script src="bundle.js"></script>
-  </body>
+  <div id="app">
+    <div text-align="center">
+      <svg height="300" width="100%" viewBox="-80 -30 600 220 ">
+        <style>
+          .title {
+            font-size: 6em;
+            font-weight: bold;
+          }
+
+          .TMBubbles,
+          .priorityGroupBox {
+            stroke-width: 3;
+          }
+
+          .priorityLine.slack {
+            stroke-width: 3;
+          }
+
+          .priorityLine.priority-0 {
+            stroke-width: 5;
+          }
+        </style>
+        <line class="priorityLine priority-0" x1="390.36774610288023" y1="120" x2="434.36774610288023" y2="120">
+        </line>
+        <line class="priorityLine priority-0" x1="44" y1="120" x2="390.36774610288023" y2="120"></line>
+        <g class="productData" transform="translate(217.18387305144012, 120)">
+          <text text-anchor="middle" transform="translate(0, -10)" class="title">TrakMap</text>
+        </g>
+
+        <g class="TMBubbles">
+          <path class="priorityLine slack" d="M0 50 C100 110 -56 60 44 120"></path>
+          <rect width="534.3677461028802" height="170" x="-50" y="0" class="priorityGroupBox"></rect>
+          <g class="dateBubble" transform="translate(44, 120)">
+            <circle cx="0" cy="0" r="18" class="dateBubbleCircle on-track"></circle>
+          </g>
+          <g class="milestone" transform="translate(0, 50)">
+            <path d="M -21 0L 0 21L 21 0L 0 -21 Z"></path>
+          </g>
+          <g class="milestone" transform="translate(434.36774610288023, 120)">
+            <path d="M -21 0L 0 21L 21 0L 0 -21 Z"></path>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
+  <script type="text/javascript" src="https://js.live.net/v7.2/OneDrive.js"></script>
+
+  <script src="bundle.js"></script>
+</body>
+
 </html>
