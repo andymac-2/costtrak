@@ -22,15 +22,15 @@ var Product = function (graph, index, obj) {
     /** @type {number} */ this.weight = 0;
     /** @type {number} */ this.percent;
     /** @type {number} */ this.health;
-    
+
     // drawing properties
-    /** @type {Object<string, number>} */ this.start = {x: 0, y: 0};
-    /** @type {Object<string, number>} */ this.end = {x: 0, y: 0};
-    
+    /** @type {Object<string, number>} */ this.start = { x: 0, y: 0 };
+    /** @type {Object<string, number>} */ this.end = { x: 0, y: 0 };
+
     /** @type {number} */ this.index = index;
     /** @type {TrakMap} */ this.trakMap = graph;
 
-    /** @type {DateBubble} */ this.dateBubble = new DateBubble (this.trakMap, this);
+    /** @type {DateBubble} */ this.dateBubble = new DateBubble(this.trakMap, this);
 
     this.restore(obj);
 };
@@ -51,7 +51,7 @@ Product.DEFAULTPRODUCT = {
     "comment": Product.DEFAULTCOMMENT,
     "weight": Product.DEFAULTWEIGHT,
     "priorityGroup": 0,
-    "level" : 0,
+    "level": 0,
     "health": Product.ONTRACK,
     "percent": 0
 };
@@ -85,11 +85,11 @@ Product.compareEnds = function (a, b) {
 Product.prototype.restore = function (obj) {
     this.name = obj["name"].toString();
     this.comment = obj["comment"].toString() || "";
-    this.level = obj["level"] | 0;
+    this.level = obj["level"] || 0;
 
-    this.weight = obj["weight"] | 7;
+    this.weight = obj["weight"] || 7;
     if (this.weight <= 1) {
-        throw new FileValidationError ("Product \"" + this.name + 
+        throw new FileValidationError("Product \"" + this.name +
             "\" has an invalid weight. Weight must be positive");
     }
 
@@ -104,7 +104,7 @@ Product.prototype.restore = function (obj) {
 
     this.priorityGroup = this.trakMap.priorityGroups[obj["priorityGroup"]];
     if (!this.priorityGroup) {
-        throw new FileValidationError ("Product \"" + this.name + 
+        throw new FileValidationError("Product \"" + this.name +
             "\" has an invalid product group index.");
     }
     this.priorityGroup.addProduct(this);
@@ -130,7 +130,7 @@ Product.prototype.drawLine = function (parent) {
     }, parent);
 
     line.addEventListener("click", () => {
-        this.trakMap.select (TrakMap.SELNORMAL, this);
+        this.trakMap.select(TrakMap.SELNORMAL, this);
     });
 
     let start = this.getStart();
@@ -146,7 +146,7 @@ Product.prototype.drawLine = function (parent) {
 
     var lineCentreX = (start.x + end.x) / 2
 
-    var description = new ProductDesc ({
+    var description = new ProductDesc({
         unclicker: this.trakMap.unclicker,
         onChange: (obj) => this.modifyData(obj),
         attrs: {
@@ -156,10 +156,10 @@ Product.prototype.drawLine = function (parent) {
         product: this
     }, this.name, this.weight, this.comment, this.priorityGroup);
     description.draw(line);
-    
-    Draw.menu (Draw.ALIGNCENTER, this.trakMap.unclicker, [{
+
+    Draw.menu(Draw.ALIGNCENTER, this.trakMap.unclicker, [{
         "icon": "icons/arrow-left.svg",
-        "action": () =>  this.trakMap.select (TrakMap.SELDEPENDENT, this)
+        "action": () => this.trakMap.select(TrakMap.SELDEPENDENT, this)
     }, {
         "icon": "icons/delete.svg",
         "action": () => this.trakMap.deleteProduct(this)
@@ -171,12 +171,12 @@ Product.prototype.drawLine = function (parent) {
         "action": () => this.moveDown()
     }, {
         "icon": "icons/arrow-right.svg",
-        "action": () => this.trakMap.select (TrakMap.SELDEPENDENCY, this)
+        "action": () => this.trakMap.select(TrakMap.SELDEPENDENCY, this)
     }], {
-        "transform": "translate(" + lineCentreX + ", " + (start.y - 45) + ")"
-    }, line);
+            "transform": "translate(" + lineCentreX + ", " + (start.y - 45) + ")"
+        }, line);
 
-    return line;  
+    return line;
 };
 Product.prototype.drawBubble = function (parent) {
     this.dateBubble.draw(parent);
@@ -224,7 +224,7 @@ Product.prototype.getEnd = function () {
     }
 };
 Product.prototype.getWidth = function () {
-    return TrakMap.MINPRODUCTWIDTH + 
+    return TrakMap.MINPRODUCTWIDTH +
         this.trakMap.getMinSeparation(0, this.weight);
 };
 Product.prototype.getMinEndX = function () {
@@ -238,14 +238,14 @@ Product.prototype.resolveHealthClass = function () {
         return "complete"
     }
     switch (this.health) {
-    case Product.ONTRACK:
-        return "on-track";
-    case Product.ATRISK:
-        return "at-risk";
-    case Product.LATE:
-        return "late";
+        case Product.ONTRACK:
+            return "on-track";
+        case Product.ATRISK:
+            return "at-risk";
+        case Product.LATE:
+            return "late";
     }
-    assert (() => false);
+    assert(() => false);
 };
 Product.prototype.getPercentArcAngle = function () {
     return this.percent * Math.PI * 2;
@@ -275,7 +275,7 @@ Product.prototype.setStartX = function (x) {
  * @param {Dependency} dep
  */
 Product.prototype.removeDependency = function (dep) {
-    assert (() => dep instanceof Dependency);
+    assert(() => dep instanceof Dependency);
     Util.removeFromArray(this.incoming, dep);
 };
 /**
@@ -283,7 +283,7 @@ Product.prototype.removeDependency = function (dep) {
  * @param {Dependency} dep
  */
 Product.prototype.addDependency = function (dep) {
-    assert (() => dep.dependent === this)
+    assert(() => dep.dependent === this)
     this.incoming.push(dep);
 };
 /**
@@ -291,15 +291,15 @@ Product.prototype.addDependency = function (dep) {
  * @param {Dependency} dep
  */
 Product.prototype.removeDependent = function (dep) {
-    assert (() => dep instanceof Dependency);
-    Util.removeFromArray (this.outgoing, dep);
+    assert(() => dep instanceof Dependency);
+    Util.removeFromArray(this.outgoing, dep);
 };
 /**
  * @this {Product|Milestone}
  * @param {Dependency} dep
  */
 Product.prototype.addDependent = function (dep) {
-    assert (() => dep.dependency === this);
+    assert(() => dep.dependency === this);
     this.outgoing.push(dep);
 };
 
@@ -311,7 +311,7 @@ Product.prototype.modifyName = function (e, input) {
  * @param {number} dir
  */
 Product.prototype.setDirection = function (dir) {
-    assert (() => dir === Product.GOINGUP || dir === Product.GOINGDOWN);
+    assert(() => dir === Product.GOINGUP || dir === Product.GOINGDOWN);
     this.direction = dir;
 };
 
@@ -319,45 +319,45 @@ Product.prototype.modifyPriorityGroup = function (pg) {
     if (pg === this.priorityGroup) {
         return;
     }
-    
+
     this.priorityGroup.removeProduct(this);
     this.priorityGroup = pg;
     this.priorityGroup.addProduct(this);
 };
 
 Product.prototype.deleteThis = function () {
-    assert (() => this.trakMap.products.indexOf(this) === -1);
-    
+    assert(() => this.trakMap.products.indexOf(this) === -1);
+
     this.incoming.slice().forEach(
         dep => this.trakMap.deleteDependencyUnsafe(dep));
     this.outgoing.slice().forEach(
         dep => this.trakMap.deleteDependencyUnsafe(dep));
 
-    assert (() => this.incoming.length === 0);
-    assert (() => this.outgoing.length === 0);
-    
+    assert(() => this.incoming.length === 0);
+    assert(() => this.outgoing.length === 0);
+
     this.priorityGroup.removeProduct(this);
 };
 // user functions.
 // accepts a ProductDesc Object
 Product.prototype.modifyData = function (productDesc) {
     this.name = productDesc.title;
-    this.weight = Math.max (Math.floor(productDesc.days), 1);
+    this.weight = Math.max(Math.floor(productDesc.days), 1);
     this.comment = productDesc.comment;
-    
+
     this.trakMap.makeSafeModification(
-        () => this.modifyPriorityGroup (productDesc.priorityGroup));
+        () => this.modifyPriorityGroup(productDesc.priorityGroup));
 };
 Product.prototype.moveUp = function () {
     this.level += Product.GOINGUP;
     this.trakMap.setAllDirections(Product.GOINGDOWN);
-    this.setDirection (Product.GOINGUP);
+    this.setDirection(Product.GOINGUP);
     this.trakMap.draw();
 };
 Product.prototype.moveDown = function () {
     this.level += Product.GOINGDOWN;
     this.trakMap.setAllDirections(Product.GOINGUP);
-    this.setDirection (Product.GOINGDOWN);
+    this.setDirection(Product.GOINGDOWN);
     this.trakMap.draw();
 };
 Product.prototype.incrementPercent = function () {
@@ -369,22 +369,22 @@ Product.prototype.incrementPercent = function () {
 };
 Product.prototype.toggleHealth = function () {
     switch (this.health) {
-    case Product.ONTRACK:
-        this.health = Product.ATRISK;
-        break;
-    case Product.ATRISK:
-        this.health = Product.LATE;
-        break;
-    default:
-        this.health = Product.ONTRACK;
-        break;
+        case Product.ONTRACK:
+            this.health = Product.ATRISK;
+            break;
+        case Product.ATRISK:
+            this.health = Product.LATE;
+            break;
+        default:
+            this.health = Product.ONTRACK;
+            break;
     }
     this.trakMap.draw();
 };
 // testing
 Product.prototype.checkInvariants = function () {
-    assert (() => this.weight > 0);
-    assert (() => this.getPriority() >= 0);
+    assert(() => this.weight > 0);
+    assert(() => this.getPriority() >= 0);
 
     var maxValue = 0;
     this.incoming.forEach(dep => {
@@ -393,14 +393,14 @@ Product.prototype.checkInvariants = function () {
         if (this.getPriority() <= dep.dependency.getPriority()) {
             maxValue = Math.max(testValue, maxValue)
         }
-        assert (() => dep.dependent === this);
+        assert(() => dep.dependent === this);
     });
-    assert (() => maxValue === this.value);
+    assert(() => maxValue === this.value);
 
     this.outgoing.forEach(dep => {
-        assert (() => dep.dependency === this);
+        assert(() => dep.dependency === this);
         dep.checkInvariants()
     });
 
-    assert (() => this.trakMap.products[this.index] === this);
+    assert(() => this.trakMap.products[this.index] === this);
 };
