@@ -1,4 +1,4 @@
-const VERSION = "1.2.1\u03B2"
+const VERSION = "1.2.2\u03B2"
 
 window.onload = function () {
     //runTestSuite();
