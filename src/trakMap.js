@@ -6,7 +6,7 @@
  */
 var TrakMap = function (obj) {
     // View
-    /** @type {Element} */ this.elem = Draw.svgElem ("svg", {});
+    /** @type {Element} */ this.elem = Draw.svgElem("svg", {});
 
     //View model (calculated)
     /** @type {number} */ this.rightMost = 0;
@@ -24,7 +24,7 @@ var TrakMap = function (obj) {
     /** @type {Product|Milestone} */ this.selection;
     /** @type {number} */ this.selType;
 
-    /** @type {Unclicker} */ this.unclicker = new Unclicker (this.elem);
+    /** @type {Unclicker} */ this.unclicker = new Unclicker(this.elem);
     this.restore(obj);
 };
 TrakMap.HSPACE = 44;
@@ -40,10 +40,10 @@ TrakMap.GREEDYMODE = 1;
 
 TrakMap.NEWFILE = {
     "title": "New TrakMap",
-    "products" : [
+    "products": [
         Product.DEFAULTPRODUCT
     ],
-    "milestones" : [
+    "milestones": [
         Milestone.DEFAULTMILESTONE
     ],
     "dependencies": [
@@ -74,23 +74,23 @@ TrakMap.prototype.restore = function (obj) {
     }
 
     this.priorityGroups = [];
-    obj["priorityGroups"].forEach ((priorityGroup, i) => {
-        this.priorityGroups.push(new PriorityGroup (this, i, priorityGroup));
+    obj["priorityGroups"].forEach((priorityGroup, i) => {
+        this.priorityGroups.push(new PriorityGroup(this, i, priorityGroup));
     });
 
     this.milestones = [];
     obj["milestones"].forEach((milestone, i) => {
-        this.milestones.push(new Milestone (this, i, milestone));
+        this.milestones.push(new Milestone(this, i, milestone));
     });
 
     this.products = [];
     obj["products"].forEach((product, i) => {
-        this.products.push(new Product (this, i, product));
+        this.products.push(new Product(this, i, product));
     });
 
     this.dependencies = [];
     obj["dependencies"].forEach((dependency, i) => {
-        this.dependencies.push(new Dependency (this, i, dependency));
+        this.dependencies.push(new Dependency(this, i, dependency));
     });
 
     this.selection = null;
@@ -104,36 +104,36 @@ TrakMap.prototype.draw = function () {
     let height = this.getBottom() - this.getTop();
     let centre = (this.getRight() + this.getLeft()) / 2;
 
-    this.elem.setAttribute ("width", "" + width);
-    this.elem.setAttribute ("viewBox", "" + 
+    this.elem.setAttribute("width", "" + width);
+    this.elem.setAttribute("viewBox", "" +
         this.getLeft() + " " +
-        this.getTop() + " " + 
+        this.getTop() + " " +
         width + " " +
         height + " ");
 
     this.elem.innerHTML = "";
 
     let g = Draw.svgElem("g", {}, this.elem);
-    new Draw.svgTextInput (this.title, Draw.ALIGNCENTER, this.unclicker, 
-        (e, inputBox) => this.modifyTitle(inputBox.text), 
+    new Draw.svgTextInput(this.title, Draw.ALIGNCENTER, this.unclicker,
+        (e, inputBox) => this.modifyTitle(inputBox.text),
         {
             "class": "trakMapTitle",
-            "transform": "translate(" 
+            "transform": "translate("
                 + centre + " " + (this.getTop() + 40) + ")"
         }, g, "Untitled");
 
-    let connections =  Draw.svgElem("g", {"class": "TMConnections"}, this.elem);
-    let lines =  Draw.svgElem("g", {"class": "TMProducts"}, this.elem);
-    let bubbles =  Draw.svgElem("g", {"class": "TMBubbles"}, this.elem);
+    let connections = Draw.svgElem("g", { "class": "TMConnections" }, this.elem);
+    let lines = Draw.svgElem("g", { "class": "TMProducts" }, this.elem);
+    let bubbles = Draw.svgElem("g", { "class": "TMBubbles" }, this.elem);
 
-    this.products.forEach (product => {
+    this.products.forEach(product => {
         product.drawLine(lines);
         product.drawBubble(bubbles);
     });
-    this.milestones.forEach (milestone => milestone.draw(bubbles));
-    this.dependencies.forEach (dependency => dependency.draw(connections));
+    this.milestones.forEach(milestone => milestone.draw(bubbles));
+    this.dependencies.forEach(dependency => dependency.draw(connections));
 
-    this.priorityGroups.forEach (priorityGroup => {
+    this.priorityGroups.forEach(priorityGroup => {
         priorityGroup.draw(lines);
     });
 
@@ -141,19 +141,19 @@ TrakMap.prototype.draw = function () {
 };
 
 TrakMap.prototype.resolveCoordinates = function () {
-    assert (() => this.mode === TrakMap.LAZYMODE || 
+    assert(() => this.mode === TrakMap.LAZYMODE ||
         this.mode === TrakMap.GREEDYMODE);
 
     if (this.mode === TrakMap.GREEDYMODE) {
-        this.greedyResolve ();
+        this.greedyResolve();
     }
     if (this.mode === TrakMap.LAZYMODE) {
-        this.lazyResolve ();
+        this.lazyResolve();
     }
 
-    this.resolvePriorityLevels ();
+    this.resolvePriorityLevels();
     this.resolvePriorityGroupOffsets();
-    this.resolveYValues ();
+    this.resolveYValues();
 
     // Step 2: resolve x coordinates
     this.resolveXValues();
@@ -185,13 +185,12 @@ TrakMap.prototype.resolveXValues = function () {
         // go through heap elements <= our current value, heap
         // elements should be traversed with priority.
         while (!heap.empty() &&
-            (heap.getMin().getEndValue() <= product.getStartValue()))
-        {
+            (heap.getMin().getEndValue() <= product.getStartValue())) {
             var min = heap.getMin();
             if (lastValue !== min.getEndValue()) {
                 let oldLast = lastValue;
                 lastValue = min.getEndValue();
-                cursor += TrakMap.HSPACE + 
+                cursor += TrakMap.HSPACE +
                     this.getMinSeparation(lastValue, oldLast);
                 cursor = Math.max(cursor, min.getMinEndX());
             }
@@ -223,10 +222,10 @@ TrakMap.prototype.resolveXValues = function () {
     }
 };
 TrakMap.prototype.lazyResolve = function () {
-    assert (() => this.mode === TrakMap.LAZYMODE);
+    assert(() => this.mode === TrakMap.LAZYMODE);
     this.products.forEach(prod => {
         if (!prod.hasValidDependents()) {
-            throw new HangingDependencyError (
+            throw new HangingDependencyError(
                 'Product "' + prod.name + '" has no dependents in lazy mode.');
         }
     });
@@ -234,10 +233,10 @@ TrakMap.prototype.lazyResolve = function () {
     nodeWeightedGraph.lazySort(this.products);
 };
 TrakMap.prototype.greedyResolve = function () {
-    assert (() => this.mode === TrakMap.GREEDYMODE);
+    assert(() => this.mode === TrakMap.GREEDYMODE);
     this.products.forEach(prod => {
         if (!prod.hasValidDependencies()) {
-            throw new HangingDependencyError (
+            throw new HangingDependencyError(
                 'Product "' + prod.name + '" has no dependencies in greedy mode.');
         }
     });
@@ -247,34 +246,34 @@ TrakMap.prototype.greedyResolve = function () {
 
 TrakMap.prototype.resolvePriorityGroupOffsets = function () {
     let boundary = TrakMap.MARGIN + TrakMap.TITLEHEIGHT;
-    this.priorityGroups.forEach (priorityGroup => {
+    this.priorityGroups.forEach(priorityGroup => {
         priorityGroup.yOffset = boundary - priorityGroup.minLevel * TrakMap.VSPACE;
-        
+
         let levelDiff = priorityGroup.maxLevel - priorityGroup.minLevel;
         boundary += TrakMap.VSPACE * levelDiff + TrakMap.PRIORITYSPACE;
     });
     this.bottom = boundary;
 };
 TrakMap.prototype.resolvePriorityLevels = function () {
-    this.priorityGroups.forEach (priorityGroup => {
+    this.priorityGroups.forEach(priorityGroup => {
         priorityGroup.resolveLevels();
     });
 };
 TrakMap.prototype.resolveYValues = function () {
-    this.products.forEach (product => product.resolveYCoord());
-    this.milestones.forEach (milestone => milestone.resolveYCoord());
+    this.products.forEach(product => product.resolveYCoord());
+    this.milestones.forEach(milestone => milestone.resolveYCoord());
 };
 
 //onchange takes one argument: the selected priority group
-TrakMap.prototype.drawPriorityGroupSelector = function(onchange, attrs, parent){
+TrakMap.prototype.drawPriorityGroupSelector = function (onchange, attrs, parent) {
     let entries = this.priorityGroups.map(priorityGroup => priorityGroup.name);
-    Draw.dropDown ((evt) => {
+    Draw.dropDown((evt) => {
         onchange(this.priorityGroups[evt.currentTarget.value])
     }, entries, attrs, parent);
 };
 // queries
 TrakMap.prototype.getTop = function () {
-    return -TrakMap.MARGIN -PriorityGroup.TOPMARGIN;
+    return -TrakMap.MARGIN - PriorityGroup.TOPMARGIN;
 };
 TrakMap.prototype.getLeft = function () {
     return -PriorityGroup.LEFTMARGIN - TrakMap.MARGIN;
@@ -298,12 +297,12 @@ TrakMap.prototype.modifyTitle = function (text) {
     this.title = text;
 };
 TrakMap.prototype.addProduct = function (obj) {
-    let product = new Product (this, this.products.length, obj);
+    let product = new Product(this, this.products.length, obj);
     this.products.push(product);
     return product;
 };
 TrakMap.prototype.addMilestone = function (obj) {
-    let milestone = new Milestone (this, this.milestones.length, obj);
+    let milestone = new Milestone(this, this.milestones.length, obj);
     this.milestones.push(milestone);
     return milestone;
 };
@@ -313,19 +312,19 @@ TrakMap.prototype.newMilestone = function (pgIndex, value, level) {
         "value": value,
         "level": level
     });
-}; 
+};
 TrakMap.prototype.addDependency = function (obj) {
-    let dep =  new Dependency (this, this.dependencies.length, obj);
+    let dep = new Dependency(this, this.dependencies.length, obj);
     this.dependencies.push(dep);
     return dep;
 };
 TrakMap.prototype.newDependency = function (dependency, dependent) {
-    let dependencyType = dependency instanceof Product ? 
+    let dependencyType = dependency instanceof Product ?
         Dependency.PRODUCT : Dependency.MILESTONE;
     let dependentType = dependent instanceof Product ?
         Dependency.PRODUCT : Dependency.MILESTONE;
-    
-    return this.addDependency ({
+
+    return this.addDependency({
         "dependencyType": dependencyType,
         "dependency": dependency.index,
         "dependentType": dependentType,
@@ -333,9 +332,9 @@ TrakMap.prototype.newDependency = function (dependency, dependent) {
     });
 };
 TrakMap.prototype.setAllDirections = function (dir) {
-    assert (() => dir === Product.GOINGDOWN || dir === Product.GOINGUP);
-    this.products.forEach (prod => prod.setDirection(dir));
-    this.milestones.forEach (milestone => milestone.setDirection(dir));
+    assert(() => dir === Product.GOINGDOWN || dir === Product.GOINGUP);
+    this.products.forEach(prod => prod.setDirection(dir));
+    this.milestones.forEach(milestone => milestone.setDirection(dir));
 };
 
 // unsafe methods may throw errors. When an error is thrown, the
@@ -346,15 +345,15 @@ TrakMap.prototype.deleteDependencyUnsafe = function (dep) {
     dep.deleteThis();
 };
 TrakMap.prototype.deleteProductUnsafe = function (product) {
-    Util.removeFromIndexedArray (this.products, product);
+    Util.removeFromIndexedArray(this.products, product);
     product.deleteThis();
 };
 TrakMap.prototype.deletePriorityGroupUnsafe = function (pg) {
-    Util.removeFromIndexedArray (this.priorityGroups, pg);
+    Util.removeFromIndexedArray(this.priorityGroups, pg);
     pg.deleteThis();
 };
 TrakMap.prototype.deleteMilestoneUnsafe = function (milestone) {
-    Util.removeFromIndexedArray (this.milestones, milestone);
+    Util.removeFromIndexedArray(this.milestones, milestone);
     milestone.deleteThis();
 };
 
@@ -368,7 +367,7 @@ TrakMap.prototype.makeSafeModification = function (func) {
     catch (e) {
         this.restore(backup);
         this.draw();
-        alert (e.name + ": " + e.message);
+        alert(e.name + ": " + e.message);
         if (!NDEBUG) {
             throw e;
         }
@@ -377,7 +376,7 @@ TrakMap.prototype.makeSafeModification = function (func) {
 
 //user events
 TrakMap.prototype.newPriorityGroup = function () {
-    let priorityGroup = new PriorityGroup (
+    let priorityGroup = new PriorityGroup(
         this, this.priorityGroups.length, PriorityGroup.DEFAULTPRIORITYGROUP);
     this.priorityGroups.push(priorityGroup);
     this.draw();
@@ -407,34 +406,34 @@ TrakMap.prototype.setMode = function (mode) {
     this.makeSafeModification(() => this.setModeUnsafe(mode));
 };
 TrakMap.prototype.setModeUnsafe = function (mode) {
-    assert (() => mode === TrakMap.GREEDYMODE || 
+    assert(() => mode === TrakMap.GREEDYMODE ||
         mode === TrakMap.LAZYMODE);
 
     this.mode = mode;
 
     if (this.mode === TrakMap.GREEDYMODE) {
-        this.products.forEach (product => {
+        this.products.forEach(product => {
             if (product.hasValidDependencies()) {
                 return;
             }
 
-            let milestone = this.newMilestone (product.priorityGroup.index, 
+            let milestone = this.newMilestone(product.priorityGroup.index,
                 product.getStartValue(), product.level);
             this.newDependency(milestone, product);
         });
     }
 
     if (this.mode === TrakMap.LAZYMODE) {
-        this.products.forEach (product => {
+        this.products.forEach(product => {
             if (product.hasValidDependents()) {
                 return;
             }
 
-            let milestone = this.newMilestone (product.priorityGroup.index, 
+            let milestone = this.newMilestone(product.priorityGroup.index,
                 product.getEndValue(), product.level);
             this.newDependency(product, milestone);
 
-            assert (() => product.hasValidDependents());
+            assert(() => product.hasValidDependents());
         });
     }
 };
@@ -452,27 +451,25 @@ TrakMap.prototype.select = function (type, obj) {
         return;
     }
     if (type === TrakMap.SELNORMAL &&
-             this.selType === TrakMap.SELDEPENDENCY &&
-             obj !== this.selection)
-    {
-        assert (() => this.selection instanceof Product);
-        assert (() => obj instanceof Product || obj instanceof Milestone);
-        
+        this.selType === TrakMap.SELDEPENDENCY &&
+        obj !== this.selection) {
+        assert(() => this.selection instanceof Product);
+        assert(() => obj instanceof Product || obj instanceof Milestone);
+
         this.makeSafeModification(
-            () => this.newDependency (this.selection, obj));
+            () => this.newDependency(this.selection, obj));
 
         this.selection = null
         this.selType = TrakMap.SELNOTHING;
     }
     else if (type === TrakMap.SELNORMAL &&
-             this.selType === TrakMap.SELDEPENDENT &&
-             obj !== this.selection)
-    {
-        assert (() => this.selection instanceof Product);
-        assert (() => obj instanceof Product || obj instanceof Milestone);
+        this.selType === TrakMap.SELDEPENDENT &&
+        obj !== this.selection) {
+        assert(() => this.selection instanceof Product);
+        assert(() => obj instanceof Product || obj instanceof Milestone);
 
         this.makeSafeModification(
-            () => this.newDependency (obj, this.selection));
+            () => this.newDependency(obj, this.selection));
 
         this.selection = null
         this.selType = TrakMap.SELNOTHING;
