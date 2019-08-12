@@ -8,3 +8,4 @@ package-lock.json
 node_modules
 .vscode
 .eslintrc.js
+trakMap.code-workspace
