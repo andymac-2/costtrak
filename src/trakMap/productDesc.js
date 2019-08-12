@@ -3,7 +3,7 @@
 /** @constructor
     @struct */
 var ProductDesc = function (options, title, days, comment, priority) {
-    
+
     // state
     /** @type {string} */ this.title;
     /** @type {string} */ this.comment;
@@ -12,7 +12,7 @@ var ProductDesc = function (options, title, days, comment, priority) {
 
     // view model
     /** @type {Unclicker} */ this.unclicker = options.unclicker;
-    /** @type {function(ProductDesc)} */ this.onChange = options.onChange || (() => {});
+    /** @type {function(ProductDesc)} */ this.onChange = options.onChange || (() => { });
     /** @type {Object} */ this.attrs = options.attrs || {};
     this.product = options.product;
 
@@ -28,7 +28,7 @@ ProductDesc.HEIGHTWIDTHRATIO = 4;
 ProductDesc.MAXTEXTLENGTH = 100;
 ProductDesc.prototype.restore = function (title, days, comment, priorityGroup) {
     this.title = title;
-    this.title = this.title === "" ? "Untitled": this.title;
+    this.title = this.title === "" ? "Untitled" : this.title;
     this.days = days;
     this.comment = comment;
     this.comment = this.comment === "" ? "" : this.comment;
@@ -36,7 +36,7 @@ ProductDesc.prototype.restore = function (title, days, comment, priorityGroup) {
 };
 
 ProductDesc.prototype.draw = function (parent) {
-    return Draw.activeOnClickElem (
+    return Draw.activeOnClickElem(
         this.onunclick.bind(this), this.onclick.bind(this), this.unclicker,
         this.attrs, parent);
 };
@@ -44,9 +44,9 @@ ProductDesc.prototype.draw = function (parent) {
 ProductDesc.prototype.onclick = function (parent) {
     let height = ProductDesc.TEXTBOXHEIGHT;
     parent.innerHTML = "";
-    
+
     let width = height * ProductDesc.HEIGHTWIDTHRATIO;
-    
+
     let foreign = Draw.svgElem("foreignObject", {
         "class": "flex-container",
         "width": width,
@@ -54,19 +54,19 @@ ProductDesc.prototype.onclick = function (parent) {
         "x": -(width / 2),
         "y": -25
     }, parent);
-    let div = Draw.htmlElem ("div", {
+    let div = Draw.htmlElem("div", {
         "class": "flex-container",
     }, foreign)
 
-    let titleBox = Draw.htmlElem ("input", {
+    let titleBox = Draw.htmlElem("input", {
         "class": "productName " + this.product.resolveHealthClass(),
         "value": this.title,
         "type": "text",
         "placeholder": "Product Name"
-    }, div);    
+    }, div);
     titleBox.addEventListener("change", () => this.modifyTitle(titleBox));
 
-    let weightBox = Draw.htmlElem ("input", {
+    let weightBox = Draw.htmlElem("input", {
         "class": "productWeight",
         "value": this.days,
         "type": "number",
@@ -80,11 +80,11 @@ ProductDesc.prototype.onclick = function (parent) {
         "x": -(width / 2),
         "y": 5
     }, parent);
-    div = Draw.htmlElem ("div", {
+    div = Draw.htmlElem("div", {
         "class": "flex-container",
     }, foreign)
 
-    var commentBox = Draw.htmlElem ("input", {
+    var commentBox = Draw.htmlElem("input", {
         "class": "productComment comment",
         "value": this.comment,
         "type": "text",
@@ -92,12 +92,13 @@ ProductDesc.prototype.onclick = function (parent) {
     }, div);
     commentBox.addEventListener("change", () => this.modifyComment(commentBox));
 
-    let priorityGroupBox = this.product.trakMap.drawPriorityGroupSelector (
+    let priorityGroupBox = this.product.trakMap.drawPriorityGroupSelector(
         pg => this.modifyPriority(pg),
         { "class": "productPriorityGroup" },
         div);
 };
 
+ProductDesc.BUBBLERADIUS = 8;
 ProductDesc.prototype.onunclick = function (parent) {
     if (this.modified) {
         this.onChange(this);
@@ -106,8 +107,22 @@ ProductDesc.prototype.onunclick = function (parent) {
 
     parent.innerHTML = "";
     var daystring = " (" + this.days + ")";
-    
-    var dayTitle = Draw.svgElem ("text", {
+
+    const bubbleYOffset = -34;
+    let bubble = Draw.svgElem("g", {
+        "class": "dateBubble",
+    }, parent);
+    Draw.svgElem("circle", {
+        "cx": "0", "cy": bubbleYOffset, "r": ProductDesc.BUBBLERADIUS,
+        "class": "dateBubbleCircle " + this.product.resolveHealthClass()
+    }, bubble);
+    if (this.product.percent !== 0) {
+        let cls = "percentArc " + this.product.getLineClass();
+        Draw.arcLine(0, bubbleYOffset, ProductDesc.BUBBLERADIUS,
+            this.product.getPercentArcAngle(), cls, bubble);
+    }
+
+    var dayTitle = Draw.svgElem("text", {
         "text-anchor": "middle",
         "transform": "translate(0, -10)",
         "class": "productName " + this.product.resolveHealthClass()
@@ -115,7 +130,7 @@ ProductDesc.prototype.onunclick = function (parent) {
     dayTitle.textContent = Util.truncate(
         this.title + daystring, ProductDesc.MAXTEXTLENGTH);
 
-    var comment = Draw.svgElem ("text", {
+    var comment = Draw.svgElem("text", {
         "class": "productComment comment",
         "text-anchor": "middle",
         "transform": "translate(0, 15)"
