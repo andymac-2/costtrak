@@ -193,12 +193,23 @@ Loader.prototype.print = function () {
     }
     else { // milti-page
         this.parent.innerHTML = "";
-        const bottom = trakMap.getBottom();
-        const right = trakMap.getRight();
+        let bottom = trakMap.getBottom();
+        let right = trakMap.getRight();
         const width = this.pageSize.width * Loader.PX_PER_MM;
         const height = this.pageSize.height * Loader.PX_PER_MM;
+
+        let firstRow = true;
+        let firstColumn = true;
         for (var left = trakMap.getLeft(); left < right; left += width * 0.9) {
+            if (firstColumn) {
+                right -= width * 0.1;
+                firstColumn = false;
+            }
             for (var top = trakMap.getTop(); top < bottom; top += height * 0.9) {
+                if (firstRow) {
+                    bottom -= height * 0.1;
+                    firstRow = false;
+                }
                 let elem = Draw.elem("div", {}, this.parent);
                 elem.innerHTML = trakMap.elem.outerHTML;
                 elem.children[0].setAttribute("class", "trakMapPage");

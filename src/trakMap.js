@@ -252,7 +252,7 @@ TrakMap.prototype.resolvePriorityGroupOffsets = function () {
         let levelDiff = priorityGroup.maxLevel - priorityGroup.minLevel;
         boundary += TrakMap.VSPACE * levelDiff + TrakMap.PRIORITYSPACE;
     });
-    this.bottom = boundary;
+    this.bottom = boundary - TrakMap.MARGIN - TrakMap.TITLEHEIGHT;
 };
 TrakMap.prototype.resolvePriorityLevels = function () {
     this.priorityGroups.forEach(priorityGroup => {
