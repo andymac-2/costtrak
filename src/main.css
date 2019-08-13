@@ -238,13 +238,15 @@ body {
 }
 
 .percentageRect.priorityLine {
-    fill: white;
-    stroke-width: 3;
+    fill: black;
+    stroke: black;
+    stroke-width: 2;
 }
 .percentageRect.priorityLine.complete {
-    fill: white;
+    fill: #B8B8B8;
+    stroke: #B8B8B8;
 }
-.percentageRect.priorityLine.priority-0 {
+/* .percentageRect.priorityLine.priority-0 {
     fill: #F15854;
 }
 .percentageRect.priorityLine.priority-1 {
@@ -267,7 +269,7 @@ body {
 }
 .percentageRect.priorityLine.priority-7 {
     fill: #DECF3F;
-}
+} */
 
 
 /* priority groups */
