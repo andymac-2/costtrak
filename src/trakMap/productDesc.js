@@ -108,19 +108,19 @@ ProductDesc.prototype.onunclick = function (parent) {
     parent.innerHTML = "";
     var daystring = " (" + this.days + ")";
 
-    const bubbleYOffset = -34;
-    let bubble = Draw.svgElem("g", {
-        "class": "dateBubble",
+    const bubbleYOffset = -38;
+    const rectWidth = 150;
+    const rectHeight = 10;
+    Draw.svgElem("rect", {
+        "class": "dateBubbleCircle " + this.product.resolveHealthClass(),
+        "x": -rectWidth / 2, "y": bubbleYOffset,
+        "width": rectWidth, "height": rectHeight,
     }, parent);
-    Draw.svgElem("circle", {
-        "cx": "0", "cy": bubbleYOffset, "r": ProductDesc.BUBBLERADIUS,
-        "class": "dateBubbleCircle " + this.product.resolveHealthClass()
-    }, bubble);
-    if (this.product.percent !== 0) {
-        let cls = "percentArc " + this.product.getLineClass();
-        Draw.arcLine(0, bubbleYOffset, ProductDesc.BUBBLERADIUS,
-            this.product.getPercentArcAngle(), cls, bubble);
-    }
+    Draw.svgElem("rect", {
+        "class": "percentageRect " + this.product.getLineClass(),
+        "x": -rectWidth / 2, "y": bubbleYOffset,
+        "width": rectWidth * this.product.percent, "height": rectHeight,
+    }, parent);
 
     var dayTitle = Draw.svgElem("text", {
         "text-anchor": "middle",

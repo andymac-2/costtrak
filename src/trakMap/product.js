@@ -107,6 +107,10 @@ Product.prototype.restore = function (obj) {
     }
 
     this.percent = obj["percent"] || 0;
+    if (typeof this.percent !== "number") {
+        throw new FileValidationError("Product \"" + this.name +
+            "\" has an invalid progress. Progress must be a number");
+    }
     this.percent = Math.max(0, this.percent);
     this.percent = Math.min(1, this.percent);
 
