@@ -179,6 +179,11 @@ TrakMap.prototype.resolveXValues = function () {
     let sortedProducts = this.products
         .concat(this.milestones)
         .sort(Product.compare);
+
+    if (sortedProducts.length === 0) {
+        return;
+    }
+
     let lastValue = sortedProducts[0].getStartValue();
 
     sortedProducts.forEach(product => {
