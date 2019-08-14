@@ -4,10 +4,10 @@
  * @constructor
  * @struct
  */
-var PriorityGroup  = function (trakMap, index, obj) {
+var PriorityGroup = function (trakMap, index, obj) {
     /** @type {TrakMap} */ this.trakMap = trakMap;
     /** @type {number} */ this.index = index;
-    
+
     /** @type {string} */ this.name;
     /** @type {number} */ this.comment;
     /** @type {number} */ this.priority;
@@ -19,7 +19,7 @@ var PriorityGroup  = function (trakMap, index, obj) {
     /** @type {number} */ this.maxLevel = Number.MIN_SAFE_INTEGER;
     /** @type {number} */ this.yOffset = 0;
 
-    this.restore (obj);
+    this.restore(obj);
 };
 
 PriorityGroup.DEFAULTPRIORITYGROUP = {
@@ -29,13 +29,13 @@ PriorityGroup.DEFAULTPRIORITYGROUP = {
 };
 // serialisation
 PriorityGroup.prototype.restore = function (obj) {
-    assert (() => !(obj instanceof PriorityGroup));
+    assert(() => !(obj instanceof PriorityGroup));
     this.name = obj["name"].toString();
     this.comment = obj["comment"].toString();
     this.priority = obj["priority"] | 0;
 
     if (this.priority < 0) {
-        throw new FileValidationError (
+        throw new FileValidationError(
             "Product group \"" + this.name + "\", has an invalid priority");
     }
 };
@@ -54,26 +54,26 @@ PriorityGroup.prototype["toJSON"] = () => {
 //drawing
 PriorityGroup.LEFTMARGIN = 50;
 PriorityGroup.prototype.draw = function (parent) {
-    let productDesc = Draw.svgElem ("g", {
+    let productDesc = Draw.svgElem("g", {
         "class": "productDesc"
     }, parent)
-    
+
     let top = this.getTop();
     let bottom = this.getBottom();
     let left = -PriorityGroup.LEFTMARGIN;
     let width = this.trakMap.rightMost + 2 * PriorityGroup.LEFTMARGIN;
 
-    let description = new PriorityGroupDesc ({
+    let description = new PriorityGroupDesc({
         unclicker: this.trakMap.unclicker,
         onChange: obj => this.modifyData(obj),
         attrs: {
             "class": "productDescData",
-            "transform":  "translate(" + (left + 5) + ", " + top + ")"
+            "transform": "translate(" + (left + 5) + ", " + top + ")"
         }
     }, this.name, this.comment, this.priority);
     description.draw(productDesc);
-    
-    Draw.svgElem ("rect", {
+
+    Draw.svgElem("rect", {
         "width": width,
         "height": bottom - top,
         "x": left,
@@ -81,7 +81,7 @@ PriorityGroup.prototype.draw = function (parent) {
         "class": "priorityGroupBox"
     }, productDesc);
 
-    Draw.menu (Draw.ALIGNLEFT, this.trakMap.unclicker, [{
+    Draw.menu(Draw.ALIGNLEFT, this.trakMap.unclicker, [{
         "icon": "icons/delete.svg",
         "action": () => this.trakMap.deletePriorityGroup(this)
     }, {
@@ -94,12 +94,12 @@ PriorityGroup.prototype.draw = function (parent) {
         "icon": "icons/plus.svg",
         "action": () => this.createMilestone()
     }], {
-        "transform": "translate(" + left + ", " + (top - 45) + ")"
-    }, productDesc);
+            "transform": "translate(" + left + ", " + (top - 45) + ")"
+        }, productDesc);
 };
 
 //queries
-PriorityGroup.BOTTOMMARGIN = 50;
+PriorityGroup.BOTTOMMARGIN = 40;
 PriorityGroup.TOPMARGIN = 50;
 PriorityGroup.prototype.getTop = function () {
     return this.yOffset + (this.minLevel * TrakMap.VSPACE) -
@@ -112,64 +112,64 @@ PriorityGroup.prototype.getBottom = function () {
 
 // modifications
 PriorityGroup.prototype.removeProduct = function (product) {
-    assert (() => product.priorityGroup === this);
+    assert(() => product.priorityGroup === this);
     Util.removeFromArray(this.products, product);
 };
 
 PriorityGroup.prototype.addProduct = function (product) {
-    assert (() => product.priorityGroup === this);
+    assert(() => product.priorityGroup === this);
     this.products.push(product);
 };
 PriorityGroup.prototype.addMilestone = function (milestone) {
-    assert (() => milestone.priorityGroup === this);
-    this.milestones.push (milestone);
+    assert(() => milestone.priorityGroup === this);
+    this.milestones.push(milestone);
 };
 PriorityGroup.prototype.removeMilestone = function (milestone) {
-    assert (() => milestone.priorityGroup === this);
-    Util.removeFromArray (this.milestones, milestone);
+    assert(() => milestone.priorityGroup === this);
+    Util.removeFromArray(this.milestones, milestone);
 };
 PriorityGroup.prototype.resolveLevels = function () {
-    assert (() => this.products.every(product => {
+    assert(() => this.products.every(product => {
         return product.direction === Product.GOINGUP ||
             product.direction === Product.GOINGDOWN;
     }));
-    assert (() => this.milestones.every(milestone => {
+    assert(() => this.milestones.every(milestone => {
         return milestone.direction === Product.GOINGUP ||
             milestone.direction === Product.GOINGDOWN;
     }));
 
-    let milestonesProducts = this.products.concat(this.milestones); 
+    let milestonesProducts = this.products.concat(this.milestones);
 
     if (milestonesProducts.length === 0) {
         this.minLevel = 0;
         this.maxLevel = 0;
         return;
     }
-    
+
     let levels = [];
     this.minLevel = Number.MAX_SAFE_INTEGER;
     this.maxLevel = Number.MIN_SAFE_INTEGER;
 
     if (this.trakMap.mode === TrakMap.GREEDYMODE) {
-        milestonesProducts.sort(Product.compare).forEach (product => {        
+        milestonesProducts.sort(Product.compare).forEach(product => {
             while (PriorityGroup.productOverlapsGreedy(levels, product)) {
                 product.level += product.direction;
             }
             levels[product.level] = product.getEndValue();
-            this.minLevel = Math.min (product.level, this.minLevel);
-            this.maxLevel = Math.max (product.level, this.maxLevel);
+            this.minLevel = Math.min(product.level, this.minLevel);
+            this.maxLevel = Math.max(product.level, this.maxLevel);
         });
-    } 
+    }
     if (this.trakMap.mode === TrakMap.LAZYMODE) {
-        milestonesProducts.sort(Product.compareReverse).forEach (product => {        
+        milestonesProducts.sort(Product.compareReverse).forEach(product => {
             while (PriorityGroup.productOverlapsLazy(levels, product)) {
                 product.level += product.direction;
             }
             levels[product.level] = product.getStartValue();
-            this.minLevel = Math.min (product.level, this.minLevel);
-            this.maxLevel = Math.max (product.level, this.maxLevel);
+            this.minLevel = Math.min(product.level, this.minLevel);
+            this.maxLevel = Math.max(product.level, this.maxLevel);
         });
-    }     
+    }
 };
 PriorityGroup.productOverlapsGreedy = function (levels, product) {
     if (levels[product.level] === undefined) {
@@ -211,7 +211,7 @@ PriorityGroup.prototype.modifyComment = function (comment) {
 // function could cause circular dependency;
 PriorityGroup.prototype.modifyData = function (priorityGroupDesc) {
     let oldPriority = this.priority;
-    
+
     this.name = priorityGroupDesc.title;
     this.comment = priorityGroupDesc.comment;
     this.priority = priorityGroupDesc.priority;
@@ -223,7 +223,7 @@ PriorityGroup.prototype.modifyData = function (priorityGroupDesc) {
         if (err instanceof CircularDependencyError) {
             this.priority = oldPriority;
             this.trakMap.draw();
-            alert ("Error: Circular dependency");
+            alert("Error: Circular dependency");
         }
         else {
             throw err;
@@ -231,42 +231,42 @@ PriorityGroup.prototype.modifyData = function (priorityGroupDesc) {
     }
 };
 PriorityGroup.prototype.deleteThis = function () {
-    assert (() => this.trakMap.priorityGroups.indexOf(this) === -1);
-    
-    this.products.slice().forEach (
+    assert(() => this.trakMap.priorityGroups.indexOf(this) === -1);
+
+    this.products.slice().forEach(
         prod => this.trakMap.deleteProductUnsafe(prod));
-    this.milestones.slice().forEach (
+    this.milestones.slice().forEach(
         milestone => this.trakMap.deleteMilestoneUnsafe(milestone));
 
-    assert (() => this.products.length === 0);
-    assert (() => this.milestones.length === 0);
+    assert(() => this.products.length === 0);
+    assert(() => this.milestones.length === 0);
 };
 PriorityGroup.prototype.moveUp = function () {
-    assert (() => this.trakMap.priorityGroups[this.index] === this);
+    assert(() => this.trakMap.priorityGroups[this.index] === this);
 
     if (this.index === 0) {
         return;
     }
 
-    assert (() => this.trakMap.priorityGroups[this.index - 1].index ===
-            this.index - 1);
+    assert(() => this.trakMap.priorityGroups[this.index - 1].index ===
+        this.index - 1);
 
     Util.swapIndexedElements(this.trakMap.priorityGroups, this.index,
-                             this.index - 1);
+        this.index - 1);
     this.trakMap.draw();
 };
 PriorityGroup.prototype.moveDown = function () {
-    assert (() => this.trakMap.priorityGroups[this.index] === this);
+    assert(() => this.trakMap.priorityGroups[this.index] === this);
 
     if (this.index === this.trakMap.priorityGroups.length - 1) {
         return;
     }
 
-    assert (() => this.trakMap.priorityGroups[this.index + 1].index ===
-            this.index + 1);
+    assert(() => this.trakMap.priorityGroups[this.index + 1].index ===
+        this.index + 1);
 
     Util.swapIndexedElements(this.trakMap.priorityGroups, this.index,
-                             this.index + 1);
+        this.index + 1);
     this.trakMap.draw();
 };
 PriorityGroup.prototype.createMilestone = function () {
@@ -276,5 +276,5 @@ PriorityGroup.prototype.createMilestone = function () {
 
 //tests
 PriorityGroup.prototype.checkInvariants = function () {
-    assert (() => this.trakMap.priorityGroups[this.index] = this);
+    assert(() => this.trakMap.priorityGroups[this.index] = this);
 };
