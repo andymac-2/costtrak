@@ -4,50 +4,66 @@ body {
 }
 
 /* generic */
+
 .scrollBox {
     overflow: auto;
 }
+
 .comment {
     stroke: none;
     fill: #b8b8b8;
     font-style: italic;
 }
+
 .flex-container {
     display: flex;
     flex-wrap: wrap;
-    padding: 0px;  
+    padding: 0px;
 }
+
 .svgTextBox {
     width: 90%;
 }
 
 /* Download dialog */
-.fileDialog{
+
+.fileDialog {
     display: block;
     width: 20em;
     margin: auto;
     margin-top: 10%;
-
     border: 2px solid #888;
     background-color: rgba(248, 248, 248, 0.95);
     border-radius: 3px;
     color: #444;
     text-align: center;
-
     padding: 1em;
 }
-.downloadDialogButton {
+
+.downloadDialogButton, .downloadDialogButtonInactive {
     display: block;
     width: 100%;
     padding: 2px;
     margin: 2px;
-    border: 1px solid #888;
     border-radius: 3px;
-
     font-size: small;
+    border: 1px solid #888;
     background-color: hsl(180, 30%, 95%);
     color: #444;
 }
+
+.downloadDialogButtonInactive {
+    border: 1px solid #CCC;
+    background-color: hsl(180, 30%, 98%);
+    color: #DDD;
+}
+
+.downloadDialogButton {
+    border: 1px solid #888;
+    background-color: hsl(180, 30%, 95%);
+    color: #444;
+}
+
 .modal {
     position: fixed;
     z-index: 1;
@@ -57,45 +73,51 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.1);
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 /* Page */
-.trakMapPage { 
+
+.trakMapPage {
     width: 100%;
     height: auto;
 }
 
 /* menu bar */
+
 .menubar {
-    padding: 0px;   
+    padding: 0px;
     display: flex;
     position: fixed;
     flex-wrap: wrap;
 }
+
 .menuBarPlaceholder {
     height: 65px;
 }
+
 .menuBarSegment {
     border: 1px solid #888;
     background-color: #f4f4f4;
     border-radius: 3px;
     margin: 2px;
     padding: 2px;
-    
     height: 55px;
     overflow: hidden;
     display: inline-block;
 }
+
 .menuBarHeader {
     color: #444;
-    font-size: small;    
+    font-size: small;
 }
+
 .menuBarContent {
     text-align: center;
     color: #444;
     font-size: small;
 }
+
 .menuBarContent span {
     display: inline-block;
     height: 45px;
@@ -103,80 +125,84 @@ body {
 }
 
 /* Title */
+
 .trakMapTitle foreignObject input {
     font-size: 1em;
     font-weight: bold;
 }
-.trakMapTitle{
+
+.trakMapTitle {
     font-size: 2em;
     font-weight: bold;
 }
 
 /* date bubbles */
-.dateBubble circle, .milestone path{
+
+.dateBubbleCircle, .milestone path {
     fill: white;
     stroke: black;
 }
+
 .dateBubble text, .milestone text {
     font-size: xx-small;
 }
-.dateBubble .percentArc {
-    stroke: black;
-    stroke-width: 4;
-    fill: none;
+
+.dateBubbleCircle.complete {
+    stroke: #B8B8B8;
+    stroke-width: 2;
 }
-.dateBubble .dateBubbleCircle.complete
-.dateBubble .dateBubbleCircle.on-track {
-    fill: white;
-}
-.dateBubble .dateBubbleCircle.at-risk {
-    fill:#ffffaa;
-}
-.dateBubble .dateBubbleCircle.late {
-    fill: #ffaaaa;
-}
+
 /* .dateBubble .complete {
     fill: #aaffaa
 } */
+
 /* milestones */
+
 .svgDateBox {
     width: 90%
 }
 
 /* Products */
+
 .productName {
     flex-grow: 4;
     flex-shrink: 4;
     width: 1px;
 }
-.productName.complete,
-.dateBubbleText.complete {
+
+.productName.complete, .dateBubbleText.complete {
     fill: #b8b8b8
 }
+
 .productWeight {
     flex-grow: 1;
     flex-shrink: 1;
     width: 1px;
 }
+
 .productComment {
     flex-grow: 4;
     width: 1px;
 }
+
 .productPriorityGroup {
     flex-grow: 1;
     width: 1px;
 }
 
 /* Menus */
+
 .menuEntry {
     cursor: pointer;
 }
-.menuEntry circle{
+
+.menuEntry circle {
     fill: hsl(180, 30%, 90%);
     stroke: none;
 }
 
 /* default */
+
 .priorityLine {
     stroke: #4D4D4D;
     fill: none;
@@ -184,15 +210,15 @@ body {
     stroke-linecap: round;
 }
 
-.priorityLine.complete, 
-.dateBubble .percentArc.complete {
-    stroke:  #B8B8B8;
+.priorityLine.complete, .dateBubble .percentArc.complete {
+    stroke: #B8B8B8;
     stroke-width: 2;
 }
 
 .priorityLine:hover {
     stroke-width: 6;
 }
+
 .priorityLine.slack:hover {
     stroke-width: 4;
 }
@@ -200,38 +226,71 @@ body {
 .priorityLine.priority-0 {
     stroke: #F15854;
 }
+
 .priorityLine.priority-1 {
     stroke: #5DA5DA;
 }
+
 .priorityLine.priority-2 {
     stroke: #FAA43A;
 }
+
 .priorityLine.priority-3 {
     stroke: #60BD68;
 }
+
 .priorityLine.priority-4 {
     stroke: #F17CB0;
 }
+
 .priorityLine.priority-5 {
     stroke: #B2912F;
 }
+
 .priorityLine.priority-6 {
     stroke: #B276B2;
 }
+
 .priorityLine.priority-7 {
     stroke: #DECF3F;
 }
+
 .priorityLine.slack {
     stroke: #b8b8b8;
-    stroke-dasharray: 5,5;
+    stroke-dasharray: 5, 5;
     stroke-width: 1;
 }
 
+.percentageRect {
+    fill: #B8B8B8;
+}
+
+.percentRectBg {
+    fill: white;
+}
+
+.percentRectBg, .percentRect {
+    stroke: #B8B8B8;
+    stroke-width: 1;
+}
+
+.percentRectBg.complete, .percentRectBg.on-track {
+    fill: white;
+}
+
+.percentRectBg.at-risk {
+    fill: #ffffaa;
+}
+
+.percentRectBg.late {
+    fill: #ffaaaa;
+}
 
 /* priority groups */
+
 .priorityGroupBox {
     stroke: #b8b8b8;
-    stroke-dasharray: 1,4;
+    stroke-dasharray: 1, 4;
     stroke-width: 1;
     fill: none;
 }
@@ -246,5 +305,3 @@ td {
     margin: 0px;
     padding: 5px;
 }
-
-
