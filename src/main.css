@@ -147,22 +147,9 @@ body {
     font-size: xx-small;
 }
 
-.dateBubble .percentArc {
-    stroke: black;
-    stroke-width: 4;
-    fill: none;
-}
-
-.dateBubbleCircle.complete .dateBubbleCircle.on-track {
-    fill: white;
-}
-
-.dateBubbleCircle.at-risk {
-    fill: #ffffaa;
-}
-
-.dateBubbleCircle.late {
-    fill: #ffaaaa;
+.dateBubbleCircle.complete {
+    stroke: #B8B8B8;
+    stroke-width: 2;
 }
 
 /* .dateBubble .complete {
@@ -276,13 +263,27 @@ body {
 
 .percentageRect {
     fill: #B8B8B8;
-    stroke: #B8B8B8;
-    stroke-width: 2;
 }
 
-.percentageRect.priorityLine.complete {
-    fill: #B8B8B8;
+.percentRectBg {
+    fill: white;
+}
+
+.percentRectBg, .percentRect {
     stroke: #B8B8B8;
+    stroke-width: 1;
+}
+
+.percentRectBg.complete, .percentRectBg.on-track {
+    fill: white;
+}
+
+.percentRectBg.at-risk {
+    fill: #ffffaa;
+}
+
+.percentRectBg.late {
+    fill: #ffaaaa;
 }
 
 /* priority groups */

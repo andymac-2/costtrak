@@ -108,12 +108,12 @@ ProductDesc.prototype.onunclick = function (parent) {
     parent.innerHTML = "";
     var daystring = " (" + this.days + ")";
 
-    if (this.product.percent > 0) {
+    if (this.product.percent < 1 && (this.product.percent > 0 || this.product.health !== Product.ONTRACK)) {
         const bubbleYOffset = -38;
         const rectWidth = 150;
         const rectHeight = 10;
         Draw.svgElem("rect", {
-            "class": "dateBubbleCircle " + this.product.resolveHealthClass(),
+            "class": "percentRectBg " + this.product.resolveHealthClass(),
             "x": -rectWidth / 2, "y": bubbleYOffset,
             "width": rectWidth, "height": rectHeight,
         }, parent);
