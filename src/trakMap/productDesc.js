@@ -108,7 +108,7 @@ ProductDesc.prototype.onunclick = function (parent) {
     parent.innerHTML = "";
     var daystring = " (" + this.days + ")";
 
-    const bubbleYOffset = -5; // -38;
+    const bubbleYOffset = -38;
     const rectWidth = 150;
     const rectHeight = 10;
     Draw.svgElem("rect", {
@@ -124,7 +124,7 @@ ProductDesc.prototype.onunclick = function (parent) {
 
     var dayTitle = Draw.svgElem("text", {
         "text-anchor": "middle",
-        "transform": "translate(0, -15)",
+        "transform": "translate(0, -10)",
         "class": "productName " + this.product.resolveHealthClass()
     }, parent);
     dayTitle.textContent = Util.truncate(
@@ -133,7 +133,7 @@ ProductDesc.prototype.onunclick = function (parent) {
     var comment = Draw.svgElem("text", {
         "class": "productComment comment",
         "text-anchor": "middle",
-        "transform": "translate(0, 20)"
+        "transform": "translate(0, 15)"
     }, parent);
     comment.textContent = Util.truncate(this.comment, ProductDesc.MAXTEXTLENGTH);
 };
