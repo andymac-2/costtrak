@@ -86,9 +86,17 @@ Product.prototype.restore = function (obj) {
     this.name = obj["name"].toString();
     this.comment = obj["comment"].toString() || "";
     this.level = obj["level"] || 0;
+    if (typeof this.level !== "number") {
+        throw new FileValidationError("Product \"" + this.name +
+            "\" has an invalid level. Level must be a number");
+    }
 
     this.weight = obj["weight"] || 7;
-    if (this.weight <= 1) {
+    if (typeof this.weight !== "number") {
+        throw new FileValidationError("Product \"" + this.name +
+            "\" has an invalid weight. Weight must be a number");
+    }
+    if (this.weight < 1) {
         throw new FileValidationError("Product \"" + this.name +
             "\" has an invalid weight. Weight must be positive");
     }
@@ -99,6 +107,10 @@ Product.prototype.restore = function (obj) {
     }
 
     this.percent = obj["percent"] || 0;
+    if (typeof this.percent !== "number") {
+        throw new FileValidationError("Product \"" + this.name +
+            "\" has an invalid progress. Progress must be a number");
+    }
     this.percent = Math.max(0, this.percent);
     this.percent = Math.min(1, this.percent);
 
@@ -163,6 +175,12 @@ Product.prototype.drawLine = function (parent) {
     }, {
         "icon": "icons/delete.svg",
         "action": () => this.trakMap.deleteProduct(this)
+    }, {
+        "icon": "icons/percent.svg",
+        "action": () => this.incrementPercent()
+    }, {
+        "icon": "icons/health.svg",
+        "action": () => this.toggleHealth()
     }, {
         "icon": "icons/move-up.svg",
         "action": () => this.moveUp()
