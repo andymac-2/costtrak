@@ -150,7 +150,10 @@ Milestone.prototype.getPriority = function () {
     return this.priorityGroup.priority;
 };
 
-// modifications
+// modifications 
+// When modifying these functions, or adding another function from
+// the Product prototype, make sure that the "this" types have been annotated
+// correctly in Products.js
 Milestone.prototype.removeDependent = Product.prototype.removeDependent;
 Milestone.prototype.removeDependency = Product.prototype.removeDependency;
 Milestone.prototype.addDependent = Product.prototype.addDependent;

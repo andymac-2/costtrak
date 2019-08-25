@@ -29,7 +29,7 @@ var TrakMap = function (obj) {
 };
 TrakMap.HSPACE = 44;
 TrakMap.MINPRODUCTWIDTH = 250;
-TrakMap.UNITVALUEWIDTH = 50;
+TrakMap.UNITVALUEWIDTH = 25;
 TrakMap.VSPACE = 70;
 TrakMap.PRIORITYSPACE = 130;
 TrakMap.MARGIN = 30;
@@ -284,6 +284,7 @@ TrakMap.prototype.getLeft = function () {
     return -PriorityGroup.LEFTMARGIN - TrakMap.MARGIN;
 };
 TrakMap.prototype.getMinSeparation = function (val1, val2) {
+    assert(() => Math.abs(val1 - val2) > 0);
     return Math.log2(Math.abs(val1 - val2)) * TrakMap.UNITVALUEWIDTH;
 };
 
