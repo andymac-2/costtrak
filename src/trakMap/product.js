@@ -366,12 +366,18 @@ Product.prototype.modifyData = function (productDesc) {
     this.trakMap.makeSafeModification(
         () => this.modifyPriorityGroup(productDesc.priorityGroup));
 };
+/**
+ * @this {Product|Milestone}
+ */
 Product.prototype.moveUp = function () {
     this.level += Product.GOINGUP;
     this.trakMap.setAllDirections(Product.GOINGDOWN);
     this.setDirection(Product.GOINGUP);
     this.trakMap.draw();
 };
+/**
+ * @this {Product|Milestone}
+ */
 Product.prototype.moveDown = function () {
     this.level += Product.GOINGDOWN;
     this.trakMap.setAllDirections(Product.GOINGUP);
