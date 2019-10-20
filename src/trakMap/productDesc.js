@@ -106,8 +106,7 @@ ProductDesc.prototype.onunclick = function (parent) {
     }
 
     parent.innerHTML = "";
-    var daystring = " (" + (Math.floor(this.days / 7)) + "w";
-    daystring += Math.floor(this.days % 7) !== 0 ? "" + (this.days % 7) + "d)" : ")";
+    var daystring = " (" + this.days + ")";
 
     if (this.product.percent < 1 && (this.product.percent > 0 || this.product.health !== Product.ONTRACK)) {
         const bubbleYOffset = -38;
